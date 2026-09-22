@@ -1,0 +1,25 @@
+name: Daily Football Scanner
+
+on:
+  schedule:
+    # ตั้งเวลาให้รันทุกวัน เวลา 03:00 UTC (ประมาณ 10:00 เช้า เวลาไทย)
+    - cron: '0 3 * * *'
+  workflow_dispatch: # อนุญาตให้กดปุ่มสั่งรันด้วยมือได้ตลอดเวลา
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests pandas
+
+      - name: Run scanner bot
+        run: python scanner.py
