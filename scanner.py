@@ -119,7 +119,63 @@ def get_scan_results():
 
 @app.route('/')
 def home():
-    return "Football Scanner API is Running!"
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Football Scanner Pro</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+            .container { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+            h1 { text-align: center; color: #38bdf8; font-size: 24px; margin-bottom: 5px; }
+            p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 0; }
+            .card { background: #334155; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 5px solid #22c55e; }
+            .match-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 8px; }
+            .badge { display: inline-block; background: #22c55e; color: #000; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+            .score { color: #38bdf8; font-weight: bold; }
+            .loading { text-align: center; color: #94a3b8; padding: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>⚽ Football Scanner Pro</h1>
+            <p class="subtitle">ระบบสแกนบอลแม่นยำสูง (เกณฑ์เข้มงวด 6 ส่วน)</p>
+            <div id="results">
+                <div class="loading">กำลังโหลดข้อมูลการสแกน...</div>
+            </div>
+        </div>
+        <script>
+            fetch('/api/scan-results')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('results');
+                    if(data.status === 'success' && data.data.length > 0) {
+                        let html = '';
+                        data.data.forEach(item => {
+                            html += `
+                                <div class="card">
+                                    <div class="match-title">${item.match}</div>
+                                    <p>Gap Score: <span class="score">+${item.gap_score}</span></p>
+                                    <span class="badge">${item.status}</span>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<p style="text-align:center; color:#94a3b8;">ไม่พบคู่ที่ผ่านเกณฑ์ในวันนี้</p>';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('results').innerHTML = '<p style="text-align:center; color:#ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+                });
+        </script>
+    </body>
+    </html>
+    """
+    return html_content
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
