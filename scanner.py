@@ -1,3 +1,6 @@
+from flask import Flask, jsonify
+app = Flask(__name__)
+
 from datetime import datetime
 import os
 import requests
@@ -73,3 +76,50 @@ def run_graded_scanner():
 
 if __name__ == "__main__":
     run_graded_scanner()
+
+# ==========================================
+# ส่วนสูตรวิเคราะห์บอลและเว็บแอป (Flask API)
+# ==========================================
+def analyze_football_match(match_data):
+    home_scored_home = match_data.get('home_scored_home', 1.8)
+    away_scored_away = match_data.get('away_scored_away', 1.5)
+    market_line = match_data.get('market_line', 2.75)
+    
+    avg_total_goals = (home_scored_home + away_scored_away)
+    gap_score = avg_total_goals - market_line
+    
+    if gap_score < 0.3:
+        return None
+        
+    h2h_5_over_pct = match_data.get('h2h_5_over_pct', 45)
+    h2h_10_over_pct = match_data.get('h2h_10_over_pct', 55)
+    
+    if h2h_5_over_pct <= 40 or h2h_10_over_pct <= 50:
+        return None
+        
+    result = {
+        "match": match_data.get('match_name', 'เจ้าบ้าน vs ทีมเยือน'),
+        "gap_score": round(gap_score, 2),
+        "status": "ผ่านเกณฑ์เข้มงวด 6 ส่วน"
+    }
+    return result
+
+@app.route('/api/scan-results', methods=['GET'])
+def get_scan_results():
+    sample_match = {
+        'match_name': 'อาร์เซนอล vs เชลซี',
+        'home_scored_home': 2.1,
+        'away_scored_away': 1.6,
+        'market_line': 2.75,
+        'h2h_5_over_pct': 60,
+        'h2h_10_over_pct': 55
+    }
+    analyzed = analyze_football_match(sample_match)
+    return jsonify({"status": "success", "data": [analyzed] if analyzed else []})
+
+@app.route('/')
+def home():
+    return "Football Scanner API is Running!"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
