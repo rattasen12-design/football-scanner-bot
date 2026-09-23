@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TDedAi Pro Scanner - ระบบวิเคราะห์บอลอัตโนมัติ</title>
+    <title>TDedAi Pro Scanner - ระบบวิเคราะห์สกอร์สูง</title>
     <style>
         body {
             background-color: #121212;
@@ -24,13 +24,31 @@
             color: #00e676;
             text-align: center;
             font-size: 22px;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+        /* ⚠️ แบนเนอร์คำเตือน */
+        .disclaimer-box {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid #ff9800;
+            color: #ffb74d;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            text-align: center;
         }
         .search-section {
             background: #252525;
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 2px dashed #00e676;
         }
         .search-section label {
@@ -97,7 +115,7 @@
             background-color: #00c853;
         }
 
-        /* 📊 ปรับกล่องผลลัพธ์เป็นสไตล์แนวนอน กะทัดรัด ไม่ต้องเลื่อนยาว */
+        /* 📊 กล่องผลลัพธ์แนวนอน */
         #result-box {
             margin-top: 20px;
             background: #252525;
@@ -117,7 +135,7 @@
         .result-title h3 {
             margin: 0;
             color: #00e676;
-            font-size: 16px;
+            font-size: 15px;
         }
         .result-title p {
             margin: 2px 0 0 0;
@@ -130,10 +148,9 @@
             padding: 5px 10px;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             text-align: center;
         }
-        /* แผงข้อมูลแนวนอน (Horizontal Grid) */
         .result-grid-horizontal {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -152,10 +169,11 @@
         }
         .result-details-compact {
             font-size: 11px;
-            color: #ccc;
+            color: #ddd;
             background: #1a1a1a;
-            padding: 8px;
+            padding: 10px;
             border-radius: 6px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -163,11 +181,14 @@
 
     <div class="container">
         <h1>⚽ TDedAi Pro Scanner</h1>
-        <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 15px;">
-            ระบบสแกนและวิเคราะห์สกอร์สูงอัตโนมัติด้วย AI Core Engine 7 ส่วน
-        </p>
+        <p class="subtitle">ระบบ AI สแกนและคัดกรองสกอร์สูงจากลีกดังแม่นยำสูง</p>
 
-        <!-- ช่องพิมพ์ค้นหาชื่อทีม -->
+        <!-- ⚠️ แบนเนอร์คำเตือนการใช้วิจารณญาณ -->
+        <div class="disclaimer-box">
+            ⚠️ <b>คำเตือน:</b> โปรดใช้วิจารณญาณในการวิเคราะห์ ข้อมูลนี้เป็นความน่าจะเป็นทางสถิติและโอกาสเกิดสกอร์สูงประมาณ <b>70% - 80%</b> จากสูตรประเมิน AI 7 ส่วน เหมาะเพื่อใช้เป็นแนวทางประกอบการตัดสินใจเท่านั้น
+        </div>
+
+        <!-- ช่องค้นหาทีม -->
         <div class="search-section">
             <label>🔍 ค้นหาคู่แข่งขัน / พิมพ์ชื่อทีมที่ต้องการวิเคราะห์:</label>
             <div class="search-box-wrapper">
@@ -176,9 +197,9 @@
             </div>
         </div>
 
-        <!-- รายการแข่งขันสดจาก API (เวลาไทย) -->
+        <!-- รายการแข่งขันลีกดังวันนี้ -->
         <div style="margin-bottom: 15px;">
-            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 8px; font-size: 13px;">📋 หรือเลือกคู่แข่งขันในโปรแกรมวันนี้ (เวลาไทย):</label>
+            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 8px; font-size: 13px;">📋 คู่เด็ดลีกดังประจำวัน (คัดอัตโนมัติ):</label>
             
             {% if matches %}
                 {% for match in matches %}
@@ -191,11 +212,11 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="color: #888; font-size: 12px; text-align: center;">กำลังโหลดข้อมูล หรือใช้วิธีพิมพ์ค้นหาด้านบนครับ</p>
+                <p style="color: #888; font-size: 12px; text-align: center;">ไม่มีโปรแกรมแข่งขันในลีกเป้าหมายช่วงเวลานี้ หรือสามารถพิมพ์ค้นหาด้านบนได้ครับ</p>
             {% endif %}
         </div>
 
-        <!-- 📊 กล่องแสดงผลลัพธ์แบบแนวนอน (กระชับ ไม่ต้องเลื่อนยาว) -->
+        <!-- 📊 กล่องแสดงผลลัพธ์แนวนอน พร้อมรายละเอียดเชิงลึก -->
         <div id="result-box">
             <div class="result-header">
                 <div class="result-title">
@@ -206,12 +227,12 @@
             </div>
 
             <div class="result-grid-horizontal">
-                <div class="grid-box">ความมั่นใจ: <span id="res-conf">-</span></div>
+                <div class="grid-box">ความน่าจะเป็น: <span id="res-conf">-</span></div>
                 <div class="grid-box">เกณฑ์ผ่าน: <span id="res-count">-</span></div>
             </div>
 
             <div class="result-details-compact" id="res-details">
-                กำลังโหลดรายละเอียด...
+                กำลังโหลดรายละเอียดเชิงลึก...
             </div>
         </div>
     </div>
@@ -247,12 +268,12 @@
         function showLoading(matchName) {
             const resultBox = document.getElementById('result-box');
             resultBox.style.display = 'block';
-            document.getElementById('res-match').innerText = "⏳ กำลังประมวลผล...";
+            document.getElementById('res-match').innerText = "⏳ กำลังประมวลผลสถิติ...";
             document.getElementById('res-subinfo').innerText = matchName;
             document.getElementById('res-grade').innerText = "...";
-            document.getElementById('res-conf').innerText = "กำลังคำนวณ";
+            document.getElementById('res-conf').innerText = "คำนวณ...";
             document.getElementById('res-count').innerText = "-";
-            document.getElementById('res-details').innerHTML = "ระบบกำลังดึงข้อมูลสถิติ API และรันสูตร 7 ส่วน...";
+            document.getElementById('res-details').innerHTML = "ระบบกำลังดึงข้อมูลการยิง การเสีย และอัตราต่อรองเพื่อวิเคราะห์...";
         }
 
         function sendScanRequest(formData) {
@@ -264,11 +285,11 @@
             .then(data => {
                 document.getElementById('res-match').innerText = data.match_name;
                 document.getElementById('res-subinfo').innerText = "🏆 " + data.league + " | ⏰ " + data.time;
-                document.getElementById('res-grade').innerText = data.grade.split(' ')[0]; // แสดงเกรดสั้นๆ เช่น A+
+                document.getElementById('res-grade').innerText = data.grade;
                 document.getElementById('res-conf').innerText = data.confidence;
                 document.getElementById('res-count').innerText = data.passed_count;
                 
-                let detailsHtml = "<b>ผลประเมิน 7 ส่วน:</b><br>";
+                let detailsHtml = "<b>📊 รายละเอียดวิเคราะห์เชิงลึก:</b><br>";
                 data.details.forEach(item => {
                     detailsHtml += "• " + item + "<br>";
                 });
@@ -276,7 +297,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('res-match').innerText = "❌ เกิดข้อผิดพลาด";
+                document.getElementById('res-match').innerText = "❌ เกิดข้อผิดพลาดในการโหลด";
             });
         }
     </script>
