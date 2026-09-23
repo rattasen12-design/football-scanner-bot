@@ -1,6 +1,6 @@
 import requests
 from flask import Flask, render_template, request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -11,8 +11,21 @@ HEADERS = {
     "x-apisports-key": API_KEY
 }
 
+def parse_utc_to_thai_time(utc_date_str):
+    """แปลงเวลา UTC จาก API ให้เป็นเวลาประเทศไทย (UTC+7) อย่างถูกต้อง"""
+    try:
+        # ตัดแต่ง string และแปลงเป็น datetime object
+        clean_str = utc_date_str.replace('Z', '+00:00')
+        dt_utc = datetime.fromisoformat(clean_str)
+        # บวกเพิ่ม 7 ชั่วโมงสำหรับเวลาประเทศไทย
+        dt_thai = dt_utc + timedelta(hours=7)
+        return dt_thai.strftime('%H:%M')
+    except Exception as e:
+        print(f"Time Parse Error: {e}")
+        return utc_date_str[11:16] if len(utc_date_str) >= 16 else "00:00"
+
 def fetch_real_matches_from_api():
-    """ดึงรายการแข่งขันวันนี้จาก API"""
+    """ดึงรายการแข่งขันวันนี้จาก API พร้อมแปลงเป็นเวลาไทย"""
     url = f"https://{API_HOST}/fixtures"
     today_date = datetime.utcnow().strftime('%Y-%m-%d')
     querystring = {"date": today_date}
@@ -29,8 +42,9 @@ def fetch_real_matches_from_api():
                 home_team = match['teams']['home']['name']
                 away_team = match['teams']['away']['name']
                 league = match['league']['name']
-                # ดึงเวลาแข่งขัน (UTC -> แปลงสั้นๆ หรือใช้เวลาจาก API)
-                match_time = match['fixture']['date'][11:16] # รูปแบบ HH:MM
+                
+                raw_date_str = match['fixture']['date']
+                match_time = parse_utc_to_thai_time(raw_date_str)
                 
                 real_match_list.append({
                     "id": fixture_id,
@@ -47,9 +61,7 @@ def fetch_real_matches_from_api():
         return []
 
 def search_fixture_by_name(team_query):
-    """
-    กรณีที่ผู้ใช้พิมพ์ชื่อทีมค้นหาเอง ระบบจะวิ่งค้นหาแมตช์ที่เกี่ยวข้องจาก API 
-    """
+    """ค้นหาแมตช์ที่ผู้ใช้พิมพ์ และแปลงเวลาเป็นเวลาไทย"""
     url = f"https://{API_HOST}/fixtures"
     today_date = datetime.utcnow().strftime('%Y-%m-%d')
     querystring = {"date": today_date}
@@ -61,9 +73,9 @@ def search_fixture_by_name(team_query):
             for match in matches:
                 home_team = match['teams']['home']['name']
                 away_team = match['teams']['away']['name']
-                # ถ้าชื่อที่พิมพ์ไปตรงกับทีมเหย้าหรือทีมเยือน
                 if team_query.lower() in home_team.lower() or team_query.lower() in away_team.lower():
-                    match_time = match['fixture']['date'][11:16]
+                    raw_date_str = match['fixture']['date']
+                    match_time = parse_utc_to_thai_time(raw_date_str)
                     return {
                         "id": match['fixture']['id'],
                         "name": f"{home_team} vs {away_team}",
@@ -73,7 +85,6 @@ def search_fixture_by_name(team_query):
     except Exception as e:
         print(f"Search API Error: {e}")
 
-    # หากไม่เจอแมตช์สดวันนี้ ให้ใช้ชื่อที่พิมพ์มาตรงๆ พร้อมระบุข้อมูลกำหนดเอง
     return {
         "id": 0,
         "name": team_query,
@@ -82,9 +93,7 @@ def search_fixture_by_name(team_query):
     }
 
 def analyze_7_parts_engine(match_info):
-    """
-    สมองกลแกนกลาง 7 ส่วน (7-part Master Core Engine)
-    """
+    """สมองกลแกนกลาง 7 ส่วน (7-part Master Core Engine)"""
     passed_rules = 7
     total_rules = 7
     score_details = [
@@ -125,7 +134,6 @@ def scan_match():
             "time": request.form.get('time', 'Live')
         }
     else:
-        # ค้นหาผ่านชื่อที่ผู้ใช้พิมพ์เข้ามา
         match_info = search_fixture_by_name(match_name)
 
     result = analyze_7_parts_engine(match_info)
