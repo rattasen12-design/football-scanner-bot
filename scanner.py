@@ -7,7 +7,6 @@ app = Flask(__name__)
 def home():
     today_str = datetime.datetime.now().strftime("%d/%m/%Y")
     
-    # จำลองข้อมูลการสแกนแมตช์สดประจำวันแบบไดนามิก (อัปเดตตามวันที่ปัจจุบัน)
     matches = [
         {
             "match": "อาร์เซนอล vs เชลซี",
