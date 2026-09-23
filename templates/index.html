@@ -10,48 +10,48 @@
             color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
             background: #1e1e1e;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         h1 {
             color: #00e676;
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 25px;
+            font-size: 22px;
+            margin-bottom: 20px;
         }
         .search-section {
             background: #252525;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border: 2px dashed #00e676;
         }
         .search-section label {
             font-weight: bold;
             color: #00e676;
             display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
         .search-box-wrapper {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         .search-input {
             flex: 1;
             background: #121212;
             border: 1px solid #444;
             color: #fff;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
         }
         .search-input:focus {
             border-color: #00e676;
@@ -59,22 +59,22 @@
         }
         .match-card {
             background: #2a2a2a;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-left: 4px solid #00e676;
         }
         .match-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 15px;
+            margin: 0 0 3px 0;
+            font-size: 14px;
             color: #ffffff;
         }
         .match-info p {
             margin: 0;
-            font-size: 12px;
+            font-size: 11px;
             color: #b0b0b0;
         }
         .badge-time {
@@ -85,31 +85,77 @@
             background-color: #00e676;
             color: #121212;
             border: none;
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
             white-space: nowrap;
+            font-size: 13px;
         }
         .btn-scan:hover {
             background-color: #00c853;
         }
+
+        /* 📊 ปรับกล่องผลลัพธ์เป็นสไตล์แนวนอน กะทัดรัด ไม่ต้องเลื่อนยาว */
         #result-box {
-            margin-top: 25px;
+            margin-top: 20px;
             background: #252525;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             display: none;
+            border: 1px solid #00e676;
         }
-        #result-box h2 {
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .result-title h3 {
+            margin: 0;
             color: #00e676;
-            margin-top: 0;
-            font-size: 18px;
+            font-size: 16px;
         }
-        .detail-item {
-            margin: 8px 0;
-            font-size: 14px;
+        .result-title p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: #aaa;
+        }
+        .result-badge {
+            background: #00e676;
+            color: #121212;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+        }
+        /* แผงข้อมูลแนวนอน (Horizontal Grid) */
+        .result-grid-horizontal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .grid-box {
+            background: #1a1a1a;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .grid-box span {
+            color: #00e676;
+            font-weight: bold;
+        }
+        .result-details-compact {
+            font-size: 11px;
+            color: #ccc;
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 6px;
         }
     </style>
 </head>
@@ -117,11 +163,11 @@
 
     <div class="container">
         <h1>⚽ TDedAi Pro Scanner</h1>
-        <p style="text-align: center; color: #aaa; font-size: 13px; margin-bottom: 20px;">
+        <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 15px;">
             ระบบสแกนและวิเคราะห์สกอร์สูงอัตโนมัติด้วย AI Core Engine 7 ส่วน
         </p>
 
-        <!-- ช่องพิมพ์ค้นหาชื่อทีมตามใจชอบ -->
+        <!-- ช่องพิมพ์ค้นหาชื่อทีม -->
         <div class="search-section">
             <label>🔍 ค้นหาคู่แข่งขัน / พิมพ์ชื่อทีมที่ต้องการวิเคราะห์:</label>
             <div class="search-box-wrapper">
@@ -130,9 +176,9 @@
             </div>
         </div>
 
-        <!-- รายการแข่งขันสดจาก API -->
-        <div style="margin-bottom: 20px;">
-            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">📋 หรือเลือกคู่แข่งขันในโปรแกรมวันนี้ (สดจาก API):</label>
+        <!-- รายการแข่งขันสดจาก API (เวลาไทย) -->
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 8px; font-size: 13px;">📋 หรือเลือกคู่แข่งขันในโปรแกรมวันนี้ (เวลาไทย):</label>
             
             {% if matches %}
                 {% for match in matches %}
@@ -141,23 +187,32 @@
                         <h3>{{ match.name }}</h3>
                         <p>{{ match.league }} • <span class="badge-time">{{ match.time }}</span></p>
                     </div>
-                    <button class="btn-scan" onclick="runScan('{{ match.name }}', '{{ match.id }}', '{{ match.league }}', '{{ match.time }}')">สแกนคู่นี้</button>
+                    <button class="btn-scan" onclick="runScan('{{ match.name }}', '{{ match.id }}', '{{ match.league }}', '{{ match.time }}')">สแกน</button>
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="color: #888; text-size: 13px; text-align: center;">กำลังโหลดข้อมูลโปรแกรมวันนี้ หรือใช้วิธีพิมพ์ค้นหาด้านบนได้เลยครับ</p>
+                <p style="color: #888; font-size: 12px; text-align: center;">กำลังโหลดข้อมูล หรือใช้วิธีพิมพ์ค้นหาด้านบนครับ</p>
             {% endif %}
         </div>
 
-        <!-- กล่องแสดงผลลัพธ์การวิเคราะห์ -->
+        <!-- 📊 กล่องแสดงผลลัพธ์แบบแนวนอน (กระชับ ไม่ต้องเลื่อนยาว) -->
         <div id="result-box">
-            <h2 id="res-match">ผลการวิเคราะห์</h2>
-            <p id="res-subinfo" style="color: #00e676; font-size: 13px; margin: 2px 0 10px 0;"></p>
-            <div class="detail-item"><b>เกรดความมั่นใจ:</b> <span id="res-grade" style="color: #00e676; font-size: 18px;">-</span></div>
-            <div class="detail-item"><b>เปอร์เซ็นต์ความสำเร็จ:</b> <span id="res-conf">-</span></div>
-            <div class="detail-item"><b>เกณฑ์ที่ผ่าน:</b> <span id="res-count">-</span></div>
-            <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
-            <div id="res-details" style="color: #ccc; font-size: 13px;"></div>
+            <div class="result-header">
+                <div class="result-title">
+                    <h3 id="res-match">ผลวิเคราะห์</h3>
+                    <p id="res-subinfo">ลีก | เวลา</p>
+                </div>
+                <div class="result-badge" id="res-grade">A+</div>
+            </div>
+
+            <div class="result-grid-horizontal">
+                <div class="grid-box">ความมั่นใจ: <span id="res-conf">-</span></div>
+                <div class="grid-box">เกณฑ์ผ่าน: <span id="res-count">-</span></div>
+            </div>
+
+            <div class="result-details-compact" id="res-details">
+                กำลังโหลดรายละเอียด...
+            </div>
         </div>
     </div>
 
@@ -184,7 +239,7 @@
 
             let formData = new FormData();
             formData.append('match_name', inputVal);
-            formData.append('fixture_id', 0); // ค้นหาจากชื่อ
+            formData.append('fixture_id', 0);
 
             sendScanRequest(formData);
         }
@@ -192,12 +247,12 @@
         function showLoading(matchName) {
             const resultBox = document.getElementById('result-box');
             resultBox.style.display = 'block';
-            document.getElementById('res-match').innerText = "⏳ กำลังดึงข้อมูลและประมวลผล " + matchName + "...";
-            document.getElementById('res-subinfo').innerText = "";
-            document.getElementById('res-grade').innerText = "กำลังวิเคราะห์...";
-            document.getElementById('res-conf').innerText = "-";
+            document.getElementById('res-match').innerText = "⏳ กำลังประมวลผล...";
+            document.getElementById('res-subinfo').innerText = matchName;
+            document.getElementById('res-grade').innerText = "...";
+            document.getElementById('res-conf').innerText = "กำลังคำนวณ";
             document.getElementById('res-count').innerText = "-";
-            document.getElementById('res-details').innerHTML = "";
+            document.getElementById('res-details').innerHTML = "ระบบกำลังดึงข้อมูลสถิติ API และรันสูตร 7 ส่วน...";
         }
 
         function sendScanRequest(formData) {
@@ -207,13 +262,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('res-match').innerText = "📊 ผลวิเคราะห์: " + data.match_name;
-                document.getElementById('res-subinfo').innerText = "🏆 ลีก: " + data.league + " | ⏰ เวลา: " + data.time;
-                document.getElementById('res-grade').innerText = data.grade;
+                document.getElementById('res-match').innerText = data.match_name;
+                document.getElementById('res-subinfo').innerText = "🏆 " + data.league + " | ⏰ " + data.time;
+                document.getElementById('res-grade').innerText = data.grade.split(' ')[0]; // แสดงเกรดสั้นๆ เช่น A+
                 document.getElementById('res-conf').innerText = data.confidence;
                 document.getElementById('res-count').innerText = data.passed_count;
                 
-                let detailsHtml = "<b>รายละเอียดการประเมิน 7 ส่วน:</b><br>";
+                let detailsHtml = "<b>ผลประเมิน 7 ส่วน:</b><br>";
                 data.details.forEach(item => {
                     detailsHtml += "• " + item + "<br>";
                 });
@@ -221,7 +276,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('res-match').innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อระบบ";
+                document.getElementById('res-match').innerText = "❌ เกิดข้อผิดพลาด";
             });
         }
     </script>
