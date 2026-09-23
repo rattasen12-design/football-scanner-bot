@@ -61,6 +61,35 @@
             margin-bottom: 15px;
             text-align: center;
         }
+        /* 🔍 ช่องค้นหาคู่บอลเอง */
+        .search-box {
+            background: #252525;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            display: flex;
+            gap: 8px;
+        }
+        .search-box input {
+            flex: 1;
+            background: #121212;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .search-box button {
+            background: #00e676;
+            color: #121212;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
         .section-header {
             font-weight: bold;
             color: #00e676;
@@ -80,11 +109,11 @@
             border: 1px solid #333;
         }
         .card-aplus {
-            border-left: 4px solid #ffD700; /* สีทองสำหรับเกรดพรีเมียม A+ */
+            border-left: 4px solid #ffD700;
             background: #25231c;
         }
         .card-ab {
-            border-left: 4px solid #00e676; /* สีเขียวสำหรับเกรด A/B */
+            border-left: 4px solid #00e676;
         }
         .match-info h3 {
             margin: 0 0 2px 0;
@@ -197,7 +226,7 @@
         <h1>⚽ TDedAi Pro Scanner</h1>
         <p class="subtitle">ระบบ AI คัดกรองคู่เด็ดความเสี่ยงต่ำ แม่นยำสูง</p>
 
-        <!-- 📊 บอร์ดสถิติความแม่นยำย้อนหลัง (Win/Loss Tracking) -->
+        <!-- 📊 บอร์ดสถิติความแม่นยำย้อนหลัง -->
         <div class="stats-board">
             <div class="stats-item">สถิติวิเคราะห์รวม <b>{{ stats.total }} คู่</b></div>
             <div class="stats-item">ทายถูก <b>{{ stats.win }} คู่</b></div>
@@ -205,10 +234,16 @@
         </div>
 
         <div class="disclaimer-box">
-            ⚠️ <b>คำเตือน:</b> โปรดใช้วิจารณญาณ ข้อมูลนี้คัดกรองจากสูตร AI 7 ส่วนเน้นความเสี่ยงต่ำ เพื่อใช้เป็นแนวทางประกอบการตัดสินใจเท่านั้น
+            ⚠️ <b>คำเตือน:</b> โปรดใช้วิจารณญาณ ข้อมูลนี้คัดกรองจากสูตร AI 7 ส่วนเพื่อใช้เป็นแนวทางประกอบการตัดสินใจเท่านั้น
         </div>
 
-        <!-- 🌟 กลุ่มที่ 1: เกรด A+ (คู่เด็ดคัดพิเศษ ความมั่นใจสูงสุด) -->
+        <!-- 🔍 ช่องพิมพ์ค้นหาคู่บอลเอง -->
+        <div class="search-box">
+            <input type="text" id="custom-team" placeholder="พิมพ์ชื่อทีมที่ต้องการวิเคราะห์ เช่น Man Utd...">
+            <button onclick="runSearchScan()">ค้นหา</button>
+        </div>
+
+        <!-- 🌟 กลุ่มที่ 1: เกรด A+ -->
         <div class="section-header">🌟 กลุ่มที่ 1: เกรด A+ (ทีเด็ดคัดเน้นๆ ความเสี่ยงต่ำสุด)</div>
         {% if matches.aplus %}
             {% for match in matches.aplus %}
@@ -221,10 +256,10 @@
             </div>
             {% endfor %}
         {% else %}
-            <p style="color: #777; font-size: 11px; padding-left: 8px;">ยังไม่มีคู่ที่ผ่านเกณฑ์เข้มงวดระดับ A+ ในช่วงเวลานี้</p>
+            <p style="color: #777; font-size: 11px; padding-left: 8px;">ไม่มีรายการช่วงเวลานี้</p>
         {% endif %}
 
-        <!-- 📋 กลุ่มที่ 2: เกรด A / B (ตัวเลือกเสริมความมั่นใจ) -->
+        <!-- 📋 กลุ่มที่ 2: เกรด A / B -->
         <div class="section-header">📋 กลุ่มที่ 2: เกรด A / B (คู่รองน่าลุ้นประจำวัน)</div>
         {% if matches.ab %}
             {% for match in matches.ab %}
@@ -237,10 +272,10 @@
             </div>
             {% endfor %}
         {% else %}
-            <p style="color: #777; font-size: 11px; padding-left: 8px;">ไม่มีรายการในกลุ่มนี้ช่วงเวลานี้</p>
+            <p style="color: #777; font-size: 11px; padding-left: 8px;">ไม่มีรายการในช่วงเวลานี้</p>
         {% endif %}
 
-        <!-- 📊 กล่องผลลัพธ์การวิเคราะห์เจาะลึก -->
+        <!-- 📊 กล่องแสดงผลลัพธ์การวิเคราะห์ -->
         <div id="result-box">
             <div class="result-header">
                 <div class="result-title">
@@ -263,6 +298,19 @@
 
     <script>
         function runScan(matchName, fixtureId, league, time) {
+            triggerAnalysis(matchName, fixtureId, league, time);
+        }
+
+        function runSearchScan() {
+            const teamQuery = document.getElementById('custom-team').value.trim();
+            if (!teamQuery) {
+                alert('กรุณาพิมพ์ชื่อทีมที่ต้องการค้นหา');
+                return;
+            }
+            triggerAnalysis(teamQuery, 0, 'Custom Search', 'Real-time');
+        }
+
+        function triggerAnalysis(matchName, fixtureId, league, time) {
             const resultBox = document.getElementById('result-box');
             resultBox.style.display = 'block';
             document.getElementById('res-match').innerText = "⏳ กำลังประมวลผลสูตร 7 ส่วน...";
