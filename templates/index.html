@@ -3,31 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Scanner Pro</title>
+    <title>TDedAi - สแกนบอลสด</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; }
-        h1 { text-align: center; color: #1e293b; }
-        .update-time { text-align: center; color: #64748b; margin-bottom: 20px; }
-        .match-card { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .match-title { font-size: 18px; font-weight: bold; color: #0f172a; margin-bottom: 8px; }
-        .match-info { font-size: 14px; color: #475569; margin: 4px 0; }
-        .badge { background: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-top: 8px; }
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 70px; /* เว้นที่ให้เมนูด้านล่าง */
+        }
+        .header {
+            background-color: #1e1e1e;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #2c2c2c;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #00e676;
+        }
+        .date-sub {
+            font-size: 13px;
+            color: #b0bec5;
+            margin-top: 5px;
+        }
+        /* แถบปุ่มเลือกวัน (วันนี้, พรุ่งนี้, สด) */
+        .nav-tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: #1a1a1a;
+            padding: 10px;
+            border-bottom: 1px solid #2c2c2c;
+        }
+        .tab-btn {
+            background-color: #2c2c2c;
+            color: #b0bec5;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            background-color: #00e676;
+            color: #121212;
+        }
+        .container {
+            padding: 15px;
+        }
+        /* การ์ดรายการบอลแต่ละคู่ */
+        .match-card {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid #2c2c2c;
+        }
+        .league-name {
+            font-size: 12px;
+            color: #00e676;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .score-box {
+            background-color: #2c2c2c;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            letter-spacing: 2px;
+        }
+        .match-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #9e9e9e;
+            border-top: 1px solid #2c2c2c;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        /* เมนูด้านล่างแบบแอปมือถือ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #181818;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #2c2c2c;
+        }
+        .nav-item {
+            text-align: center;
+            color: #9e9e9e;
+            font-size: 11px;
+            text-decoration: none;
+        }
+        .nav-item.active {
+            color: #00e676;
+        }
     </style>
 </head>
 <body>
+
+    <div class="header">
+        <h1>⚽ TDedAi Pro</h1>
+        <div class="date-sub">ข้อมูลประจำวันที่: {{ update_time }}</div>
+    </div>
+
+    <!-- แถบปุ่มกดสลับมุมมอง -->
+    <div class="nav-tabs">
+        <button class="tab-btn active">วันนี้</button>
+        <button class="tab-btn">พรุ่งนี้</button>
+        <button class="tab-btn">สด (Live)</button>
+    </div>
+
     <div class="container">
-        <h1>⚽ Football Scanner Pro</h1>
-        <div class="update-time">ข้อมูลประจำวันที่: {{ update_time }}</div>
-        
         {% for m in matches %}
         <div class="match-card">
-            <div class="match-title">{{ m.match }} ({{ m.league }})</div>
-            <div class="match-info">Gap Score: <b>{{ m.gap_score }}</b></div>
-            <div class="match-info">H2H (5 นัด): {{ m.h2h_5 }} | H2H (10 นัด): {{ m.h2h_10 }}</div>
-            <div class="badge">{{ m.status }}</div>
+            <div class="league-name">🏆 {{ m.league }}</div>
+            <div class="match-teams">
+                <span>{{ m.match.split(' vs ')[0] }}</span>
+                <span class="score-box">VS</span>
+                <span>{{ m.match.split(' vs ')[1] if ' vs ' in m.match else '' }}</span>
+            </div>
+            <div class="match-footer">
+                <span>สถานะ: {{ m.status }}</span>
+                <span style="color: #00e676; font-weight: bold;">Gap: {{ m.gap_score }}</span>
+            </div>
         </div>
         {% endfor %}
     </div>
+
+    <!-- เมนูด้านล่างสุดเท่ -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item">📊 ทำนายผล</a>
+        <a href="#" class="nav-item active">📅 ตารางแข่ง</a>
+        <a href="#" class="nav-item">🔴 ผลบอล</a>
+        <a href="#" class="nav-item">🏆 ตารางคะแนน</a>
+    </div>
+
 </body>
 </html>
