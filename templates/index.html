@@ -3,324 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TDedAi Pro Scanner - คัดเกรดบอลแม่นยำสูง</title>
+    <title>TDedAi Pro Scanner</title>
     <style>
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 15px;
-        }
-        .container {
-            max-width: 650px;
-            margin: 0 auto;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        h1 {
-            color: #00e676;
-            text-align: center;
-            font-size: 22px;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #aaa;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-        /* 📊 บอร์ดสถิติความแม่นยำย้อนหลัง */
-        .stats-board {
-            background: linear-gradient(135deg, #1b5e20, #004d40);
-            border: 1px solid #00e676;
-            border-radius: 8px;
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin-bottom: 15px;
-            font-size: 12px;
-        }
-        .stats-item b {
-            color: #00e676;
-            font-size: 14px;
-            display: block;
-        }
-        /* ⚠️ แบนเนอร์คำเตือน */
-        .disclaimer-box {
-            background: rgba(255, 152, 0, 0.1);
-            border: 1px solid #ff9800;
-            color: #ffb74d;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            line-height: 1.4;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        /* 🔍 ช่องค้นหาคู่บอลเอง */
-        .search-box {
-            background: #252525;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-            display: flex;
-            gap: 8px;
-        }
-        .search-box input {
-            flex: 1;
-            background: #121212;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        .search-box button {
-            background: #00e676;
-            color: #121212;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        .section-header {
-            font-weight: bold;
-            color: #00e676;
-            font-size: 13px;
-            margin: 15px 0 8px 0;
-            border-left: 3px solid #00e676;
-            padding-left: 8px;
-        }
-        .match-card-horizontal {
-            background: #2a2a2a;
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #333;
-        }
-        .card-aplus {
-            border-left: 4px solid #ffD700;
-            background: #25231c;
-        }
-        .card-ab {
-            border-left: 4px solid #00e676;
-        }
-        .match-info h3 {
-            margin: 0 0 2px 0;
-            font-size: 13px;
-            color: #ffffff;
-        }
-        .match-info p {
-            margin: 0;
-            font-size: 10px;
-            color: #b0b0b0;
-        }
-        .badge-time {
-            color: #00e676;
-            font-weight: bold;
-        }
-        .badge-grade-aplus {
-            background: #ffD700;
-            color: #121212;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .badge-grade-ab {
-            background: #00e676;
-            color: #121212;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .btn-scan {
-            background-color: #00e676;
-            color: #121212;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .btn-scan:hover {
-            background-color: #00c853;
-        }
-
-        /* 📊 กล่องแสดงผลลัพธ์ */
-        #result-box {
-            margin-top: 20px;
-            background: #252525;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-            border: 1px solid #00e676;
-        }
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #444;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
-        }
-        .result-title h3 {
-            margin: 0;
-            color: #00e676;
-            font-size: 14px;
-        }
-        .result-title p {
-            margin: 2px 0 0 0;
-            font-size: 11px;
-            color: #aaa;
-        }
-        .result-badge {
-            background: #ffD700;
-            color: #121212;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 11px;
-        }
-        .result-grid-horizontal {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .grid-box {
-            background: #1a1a1a;
-            padding: 6px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-        }
-        .grid-box span {
-            color: #00e676;
-            font-weight: bold;
-        }
-        .result-details-compact {
-            font-size: 11px;
-            color: #ddd;
-            background: #1a1a1a;
-            padding: 10px;
-            border-radius: 6px;
-            line-height: 1.4;
-        }
+        body { background-color: #1a1a1a; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 10px; }
+        .container { max-width: 500px; margin: 0 auto; background: #222; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .header { text-align: center; margin-bottom: 15px; }
+        .header h2 { color: #00ff88; margin: 5px 0; }
+        .stats-box { background: #113322; border: 1px solid #00ff88; border-radius: 8px; padding: 10px; display: flex; justify-content: space-around; text-align: center; margin-bottom: 15px; }
+        .alert-box { background: #3d2c1d; border: 1px solid #ffaa00; color: #ffcc00; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; }
+        .search-box { display: flex; gap: 8px; margin-bottom: 20px; }
+        .search-box input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #333; color: #fff; }
+        .search-box button { background: #00ff88; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .section-title { color: #00ff88; font-size: 14px; margin: 15px 0 8px 0; border-left: 3px solid #00ff88; padding-left: 8px; }
+        .match-card { background: #2a2a2a; border: 1px solid #444; padding: 10px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .match-card:hover { border-color: #00ff88; background: #333; }
+        .result-panel { background: #1e1e1e; border: 1px solid #00ff88; border-radius: 8px; padding: 12px; margin-top: 20px; }
+        .badge { background: #ffaa00; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>⚽ TDedAi Pro Scanner</h1>
-        <p class="subtitle">ระบบ AI คัดกรองคู่เด็ดความเสี่ยงต่ำ แม่นยำสูง</p>
-
-        <!-- 📊 บอร์ดสถิติความแม่นยำย้อนหลัง -->
-        <div class="stats-board">
-            <div class="stats-item">สถิติวิเคราะห์รวม <b>{{ stats.total }} คู่</b></div>
-            <div class="stats-item">ทายถูก <b>{{ stats.win }} คู่</b></div>
-            <div class="stats-item">ความแม่นยำ <b>{{ stats.accuracy }}</b></div>
+        <div class="header">
+            <h2>⚽ TDedAi Pro Scanner</h2>
+            <p style="font-size: 12px; color: #aaa;">ระบบ AI คัดกรองคู่เด็ดความเสี่ยงต่ำ แม่นยำสูง</p>
         </div>
 
-        <div class="disclaimer-box">
-            ⚠️ <b>คำเตือน:</b> โปรดใช้วิจารณญาณ ข้อมูลนี้คัดกรองจากสูตร AI 7 ส่วนเพื่อใช้เป็นแนวทางประกอบการตัดสินใจเท่านั้น
+        <div class="stats-box">
+            <div>สถิติวิเคราะห์รวม<br><b>{{ stats.total }} คู่</b></div>
+            <div>ทายถูก<br><b>{{ stats.win }} คู่</b></div>
+            <div>ความแม่นยำ<br><b style="color: #00ff88;">{{ stats.accuracy }}</b></div>
         </div>
 
-        <!-- 🔍 ช่องพิมพ์ค้นหาคู่บอลเอง -->
+        <div class="alert-box">
+            ⚠️ คำเตือน: โปรดใช้วิจารณญาณ ข้อมูลนี้คัดกรองจากสูตร AI 7 ส่วนเพื่อเป็นแนวทางประกอบการตัดสินใจเท่านั้น
+        </div>
+
         <div class="search-box">
-            <input type="text" id="custom-team" placeholder="พิมพ์ชื่อทีมที่ต้องการวิเคราะห์ เช่น Man Utd...">
-            <button onclick="runSearchScan()">ค้นหา</button>
+            <input type="text" id="matchInput" placeholder="พิมพ์ชื่อทีมที่ต้องการวิเคราะห์...">
+            <button onclick="searchMatch()">ค้นหา</button>
         </div>
 
-        <!-- 🌟 กลุ่มที่ 1: เกรด A+ -->
-        <div class="section-header">🌟 กลุ่มที่ 1: เกรด A+ (ทีเด็ดคัดเน้นๆ ความเสี่ยงต่ำสุด)</div>
-        {% if matches.aplus %}
-            {% for match in matches.aplus %}
-            <div class="match-card-horizontal card-aplus">
-                <div class="match-info">
-                    <h3>{{ match.name }} <span class="badge-grade-aplus">A+</span></h3>
-                    <p>{{ match.league }} • <span class="badge-time">{{ match.time }}</span></p>
+        <!-- กลุ่มที่ 1: เกรด A+ -->
+        <div class="section-title">⭐ กลุ่มที่ 1: เกรด A+ (ทีเด็ดคัดเน้นๆ ความเสี่ยงต่ำสุด)</div>
+        <div id="groupAplus">
+            {% if matches.aplus %}
+                {% for m in matches.aplus %}
+                <div class="match-card" onclick="selectMatch('{{ m.name }}', {{ m.id }}, '{{ m.league }}', '{{ m.time }}')">
+                    <div>
+                        <b style="font-size: 13px;">{{ m.name }}</b><br>
+                        <span style="font-size: 11px; color: #aaa;">🏆 {{ m.league }} | ⏰ {{ m.time }}</span>
+                    </div>
+                    <span class="badge">{{ m.grade }}</span>
                 </div>
-                <button class="btn-scan" onclick="runScan('{{ match.name }}', '{{ match.id }}', '{{ match.league }}', '{{ match.time }}')">วิเคราะห์</button>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="color: #777; font-size: 11px; padding-left: 8px;">ไม่มีรายการช่วงเวลานี้</p>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <p style="font-size: 12px; color: #777; text-align: center;">กำลังโหลดรายการแข่งขัน...</p>
+            {% endif %}
+        </div>
 
-        <!-- 📋 กลุ่มที่ 2: เกรด A / B -->
-        <div class="section-header">📋 กลุ่มที่ 2: เกรด A / B (คู่รองน่าลุ้นประจำวัน)</div>
-        {% if matches.ab %}
-            {% for match in matches.ab %}
-            <div class="match-card-horizontal card-ab">
-                <div class="match-info">
-                    <h3>{{ match.name }} <span class="badge-grade-ab">A/B</span></h3>
-                    <p>{{ match.league }} • <span class="badge-time">{{ match.time }}</span></p>
+        <!-- กลุ่มที่ 2: เกรด A / B -->
+        <div class="section-title">📋 กลุ่มที่ 2: เกรด A / B (คู่รองน่าลุ้นประจำวัน)</div>
+        <div id="groupAb">
+            {% if matches.ab %}
+                {% for m in matches.ab %}
+                <div class="match-card" onclick="selectMatch('{{ m.name }}', {{ m.id }}, '{{ m.league }}', '{{ m.time }}')">
+                    <div>
+                        <b style="font-size: 13px;">{{ m.name }}</b><br>
+                        <span style="font-size: 11px; color: #aaa;">🏆 {{ m.league }} | ⏰ {{ m.time }}</span>
+                    </div>
+                    <span class="badge" style="background: #00ff88;">{{ m.grade }}</span>
                 </div>
-                <button class="btn-scan" onclick="runScan('{{ match.name }}', '{{ match.id }}', '{{ match.league }}', '{{ match.time }}')">วิเคราะห์</button>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="color: #777; font-size: 11px; padding-left: 8px;">ไม่มีรายการในช่วงเวลานี้</p>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <p style="font-size: 12px; color: #777; text-align: center;">กำลังโหลดรายการแข่งขัน...</p>
+            {% endif %}
+        </div>
 
-        <!-- 📊 กล่องแสดงผลลัพธ์การวิเคราะห์ -->
-        <div id="result-box">
-            <div class="result-header">
-                <div class="result-title">
-                    <h3 id="res-match">ผลวิเคราะห์</h3>
-                    <p id="res-subinfo">ลีก | เวลา</p>
-                </div>
-                <div class="result-badge" id="res-grade">A+</div>
+        <!-- แผงแสดงผลลัพธ์การวิเคราะห์ -->
+        <div class="result-panel" id="resultPanel">
+            <h4 id="resName" style="margin-top: 0; color: #00ff88;">ผลการวิเคราะห์สูตร 7 ส่วน</h4>
+            <p style="font-size: 12px; margin: 4px 0;">🏆 ลีก: <span id="resLeague">-</span></p>
+            <p style="font-size: 12px; margin: 4px 0;">⏰ เวลา: <span id="resTime">-</span></p>
+            <div style="display: flex; gap: 10px; margin: 10px 0;">
+                <div style="flex: 1; background: #2a2a2a; padding: 8px; border-radius: 6px; text-align: center;">เกรด: <b id="resGrade" style="color:#00ff88;">-</b></div>
+                <div style="flex: 1; background: #2a2a2a; padding: 8px; border-radius: 6px; text-align: center;">ความมั่นใจ: <b id="resConf" style="color:#00ff88;">-</b></div>
             </div>
-
-            <div class="result-grid-horizontal">
-                <div class="grid-box">ความมั่นใจ: <span id="res-conf">-</span></div>
-                <div class="grid-box">เกณฑ์ผ่าน: <span id="res-count">-</span></div>
-            </div>
-
-            <div class="result-details-compact" id="res-details">
-                กำลังโหลดรายละเอียดเชิงลึก...
+            <div style="font-size: 12px; background: #252525; padding: 10px; border-radius: 6px;" id="resDetails">
+                กดเลือกคู่แข่งขันด้านบน หรือพิมพ์ค้นหาเพื่อเริ่มรันสูตรวิเคราะห์ 7 ส่วน
             </div>
         </div>
     </div>
 
     <script>
-        function runScan(matchName, fixtureId, league, time) {
-            triggerAnalysis(matchName, fixtureId, league, time);
+        function selectMatch(name, id, league, time) {
+            sendScanRequest(name, id, league, time);
         }
 
-        function runSearchScan() {
-            const teamQuery = document.getElementById('custom-team').value.trim();
-            if (!teamQuery) {
-                alert('กรุณาพิมพ์ชื่อทีมที่ต้องการค้นหา');
-                return;
-            }
-            triggerAnalysis(teamQuery, 0, 'Custom Search', 'Real-time');
+        function searchMatch() {
+            let val = document.getElementById('matchInput').value;
+            if(!val) return;
+            sendScanRequest(val, 0, '', '');
         }
 
-        function triggerAnalysis(matchName, fixtureId, league, time) {
-            const resultBox = document.getElementById('result-box');
-            resultBox.style.display = 'block';
-            document.getElementById('res-match').innerText = "⏳ กำลังประมวลผลสูตร 7 ส่วน...";
-            document.getElementById('res-subinfo').innerText = matchName;
-            document.getElementById('res-grade').innerText = "...";
-            document.getElementById('res-conf').innerText = "คำนวณ...";
-            document.getElementById('res-count').innerText = "-";
-            document.getElementById('res-details').innerHTML = "กำลังตรวจสอบสถิติการยิง การเสีย และอัตราความเสี่ยง...";
-
-            let formData = new FormData();
+        function sendScanRequest(matchName, fixtureId, league, time) {
+            let formData = new URLSearchParams();
             formData.append('match_name', matchName);
             formData.append('fixture_id', fixtureId);
             formData.append('league', league);
@@ -330,23 +116,19 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                document.getElementById('res-match').innerText = data.match_name;
-                document.getElementById('res-subinfo').innerText = "🏆 " + data.league + " | ⏰ " + data.time;
-                document.getElementById('res-grade').innerText = data.grade;
-                document.getElementById('res-conf').innerText = data.confidence;
-                document.getElementById('res-count').innerText = data.passed_count;
+                document.getElementById('resName').innerText = data.match_name;
+                document.getElementById('resLeague').innerText = data.league;
+                document.getElementById('resTime').innerText = data.time;
+                document.getElementById('resGrade').innerText = data.grade;
+                document.getElementById('resConf').innerText = data.confidence;
                 
-                let detailsHtml = "<b>📊 รายละเอียดวิเคราะห์เจาะลึก:</b><br>";
-                data.details.forEach(item => {
-                    detailsHtml += "• " + item + "<br>";
+                let detailsHtml = "";
+                data.details.forEach(d => {
+                    detailsHtml += `<p style="margin: 6px 0;">${d}</p>`;
                 });
-                document.getElementById('res-details').innerHTML = detailsHtml;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('res-match').innerText = "❌ เกิดข้อผิดพลาดในการโหลด";
+                document.getElementById('resDetails').innerHTML = detailsHtml;
             });
         }
     </script>
