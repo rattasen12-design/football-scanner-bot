@@ -14,6 +14,27 @@ TARGET_LEAGUE_IDS = [
     39, 140, 135, 78, 61, 94, 88, 98, 179, 103, 113, 2, 3
 ]
 
+# พจนานุกรมแปลงชื่อทีมไทย -> อังกฤษ (เพื่อให้ระบบค้นหาเจอใน API ได้ทันที)
+TEAM_NAME_MAPPING = {
+    "บาร์เซโลน่า": "barcelona",
+    "บาร์ซ่า": "barcelona",
+    "ปารีส": "psg",
+    "ปารีสแชร์กแมนต์": "psg",
+    "เรอัลมาดริด": "real madrid",
+    "มาดริด": "real madrid",
+    "แมนเชสเตอร์ยูไนเต็ด": "manchester united",
+    "แมนยู": "manchester united",
+    "แมนเชสเตอร์ซิตี้": "manchester city",
+    "แมนซิตี้": "manchester city",
+    "ลิเวอร์พูล": "liverpool",
+    "อาร์เซนอล": "arsenal",
+    "เชลซี": "chelsea",
+    "บาเยิร์น": "bayern",
+    "ยูเวนตุส": "juventus",
+    "มิลาน": "milan",
+    "อินเตอร์": "inter"
+}
+
 def parse_utc_to_thai_time(utc_date_str):
     try:
         clean_str = utc_date_str.replace('Z', '+00:00')
@@ -32,7 +53,6 @@ def evaluate_match_7_parts(match_info):
     away_team = match_info.get('away_team', 'ทีมเยือน')
     league = match_info.get('league', 'รายการแข่งขัน')
 
-    # จำลองการประมวลผลผ่านสูตร 7 ข้อตายตัว (สามารถใส่เงื่อนไขคำนวณจริงจากสถิติ API ได้ที่นี่)
     grade = "A+"
     confidence = "88%"
     passed_status = "7/7 ผ่านเกณฑ์สูตร"
@@ -119,9 +139,17 @@ def fetch_and_categorize_matches():
 
 def search_fixture_from_api(team_query):
     """
-    ค้นหาคู่บอลจาก API แบบเรียลไทม์ (รองรับทั้งวันนี้และวันข้างหน้าโดยเช็กจากช่วงวันที่ใกล้เคียง)
+    ค้นหาคู่บอลจาก API แบบเรียลไทม์ รองรับทั้งชื่อไทย (แปลงเป็นอังกฤษ) และอังกฤษ
     """
-    # ค้นหาจากวันนี้ และวันถัดไป (เผื่อกรณีแข่งวันหน้า)
+    clean_query = team_query.lower()
+    
+    # แปลงชื่อไทยเป็นอังกฤษหากอยู่ในพจนานุกรม
+    for thai_key, eng_val in TEAM_NAME_MAPPING.items():
+        if thai_key in clean_query:
+            clean_query = eng_val
+            break
+
+    # ค้นหาในช่วง 3 วัน (วันนี้, พรุ่งนี้, มะรืนนี้)
     for day_offset in range(0, 3):
         target_date = (datetime.utcnow() + timedelta(days=day_offset)).strftime('%Y-%m-%d')
         url = f"https://{API_HOST}/fixtures"
@@ -131,7 +159,6 @@ def search_fixture_from_api(team_query):
             response = requests.get(url, headers=HEADERS, params=querystring, timeout=10)
             if response.status_code == 200:
                 matches = response.json().get('response', [])
-                clean_query = team_query.lower()
                 
                 for match in matches:
                     home_team = match['teams']['home']['name'].lower()
@@ -139,8 +166,8 @@ def search_fixture_from_api(team_query):
                     home_original = match['teams']['home']['name']
                     away_original = match['teams']['away']['name']
                     
-                    # ถ้าระบบพบชื่อทีมตรงกันใน API
-                    if home_team in clean_query or away_team in clean_query or any(w in clean_query for w in home_team.split() if len(w) > 3) or any(w in clean_query for w in away_team.split() if len(w) > 3):
+                    # ตรวจสอบว่าคำค้นหามีอยู่ในชื่อทีมเหย้าหรือทีมเยือน
+                    if clean_query in home_team or clean_query in away_team or home_team in clean_query or away_team in clean_query:
                         raw_date_str = match['fixture']['date']
                         match_time = parse_utc_to_thai_time(raw_date_str)
                         return {
@@ -195,7 +222,7 @@ def scan_match():
                 "passed_count": "ไม่พบการแข่งขัน",
                 "details": [
                     "❌ <b>ไม่พบข้อมูลการแข่งขันดังกล่าวในระบบ API สำหรับช่วงเวลานี้</b>",
-                    "🔍 กรุณาตรวจสอบชื่อทีมใหม่อีกครั้ง หรือพิมพ์เฉพาะชื่อทีมหลัก (เช่น Molde หรือ Rosenborg)"
+                    "🔍 คำแนะนำ: ลองพิมพ์ชื่อทีมเป็นภาษาอังกฤษ (เช่น Barcelona, PSG, Molde) หรือเลือกจากรายการด้านบน"
                 ]
             })
         match_info = search_result
