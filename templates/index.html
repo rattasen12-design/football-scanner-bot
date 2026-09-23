@@ -3,259 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TDedAi Pro - Football Over Scanner</title>
+    <title>TDedAi Pro Scanner - ระบบวิเคราะห์บอลอัตโนมัติ</title>
     <style>
         body {
             background-color: #121212;
             color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding-bottom: 70px;
-        }
-        .header {
-            text-align: center;
-            padding: 15px;
-            background: #1e1e1e;
-            border-bottom: 1px solid #333;
-        }
-        .header h2 {
-            color: #00e676;
-            margin: 0;
-            font-size: 20px;
+            padding: 20px;
         }
         .container {
             max-width: 600px;
-            margin: 15px auto;
-            padding: 15px;
-        }
-        .card {
+            margin: 0 auto;
             background: #1e1e1e;
-            padding: 15px;
+            padding: 25px;
             border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        h3 {
+        h1 {
             color: #00e676;
-            font-size: 16px;
-            margin-top: 0;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 25px;
         }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        label {
-            display: block;
-            margin-bottom: 4px;
-            color: #b0bec5;
-            font-size: 13px;
-        }
-        input, select {
-            width: 100%;
-            padding: 9px;
-            background: #2d2d2d;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #00e676;
-            color: #121212;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        button:hover {
-            background-color: #00c853;
-        }
-        .fixture-item {
-            background: #252525;
-            padding: 10px;
+        .match-card {
+            background: #2a2a2a;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-left: 4px solid #00e676;
         }
-        .fixture-info {
+        .match-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #ffffff;
+        }
+        .match-info p {
+            margin: 0;
             font-size: 13px;
+            color: #b0b0b0;
         }
-        .btn-sm {
-            padding: 6px 12px;
-            background: #00e676;
+        .btn-scan {
+            background-color: #00e676;
             color: #121212;
             border: none;
-            border-radius: 4px;
+            padding: 10px 18px;
+            border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 12px;
-            width: auto;
+            transition: background 0.2s;
         }
-        #result {
-            margin-top: 15px;
+        .btn-scan:hover {
+            background-color: #00c853;
+        }
+        #result-box {
+            margin-top: 25px;
             background: #252525;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             display: none;
         }
-        .grade-box {
-            font-size: 18px;
-            font-weight: bold;
-            color: #ff9100;
-            margin-bottom: 8px;
-        }
-        ul {
-            padding-left: 18px;
-            font-size: 13px;
-        }
-        li {
-            margin-bottom: 4px;
-        }
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #1a1a1a;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid #333;
-        }
-        .nav-item {
-            color: #aaa;
-            font-size: 12px;
-            text-align: center;
-            text-decoration: none;
-        }
-        .nav-item.active {
+        #result-box h2 {
             color: #00e676;
-            font-weight: bold;
+            margin-top: 0;
+            font-size: 20px;
+        }
+        .detail-item {
+            margin: 8px 0;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2>⚽ TDedAi Pro Scanner</h2>
-</div>
+    <div class="container">
+        <h1>⚽ TDedAi Pro Scanner</h1>
+        <p style="text-align: center; color: #aaa; font-size: 14px; margin-bottom: 20px;">
+            ระบบสแกนและวิเคราะห์สกอร์สูงอัตโนมัติด้วย AI Core Engine 7 ส่วน
+        </p>
 
-<div class="container">
-    <!-- ตารางเลือกคู่แข่งขันด่วน -->
-    <div class="card">
-        <h3>📋 เลือกคู่แข่งขันในโปรแกรมวันนี้</h3>
-        <div class="fixture-item">
-            <div class="fixture-info">
-                <strong>Arsenal vs Chelsea</strong><br>
-                <span style="color: #888;">Premier League • ราคาเป้า: 2.5</span>
+        <!-- รายการคู่แข่งขันแนะนำวันนี้ -->
+        <div style="margin-bottom: 20px;">
+            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">📋 เลือกคู่แข่งขันในโปรแกรมวันนี้:</label>
+            
+            <div class="match-card">
+                <div class="match-info">
+                    <h3>Arsenal vs Chelsea</h3>
+                    <p>Premier League • วิเคราะห์อัพเดทเรียลไทม์</p>
+                </div>
+                <button class="btn-scan" onclick="runScan('Arsenal vs Chelsea')">สแกนคู่นี้</button>
             </div>
-            <button class="btn-sm" onclick="selectMatch('Arsenal vs Chelsea', 'Premier League', 2.5, 1.8, 1.4)">สแกนคู่นี้</button>
-        </div>
-        <div class="fixture-item">
-            <div class="fixture-info">
-                <strong>Real Madrid vs Barcelona</strong><br>
-                <span style="color: #888;">La Liga • ราคาเป้า: 3.0</span>
-            </div>
-            <button class="btn-sm" onclick="selectMatch('Real Madrid vs Barcelona', 'La Liga', 3.0, 2.1, 1.9)">สแกนคู่นี้</button>
-        </div>
-    </div>
 
-    <!-- ฟอร์มกรอกและปรับแต่งสถิติสำหรับสูตร 7 ส่วน -->
-    <div class="card">
-        <h3>⚙️ กำหนดค่าสถิติแกนกลาง (Core Engine)</h3>
-        <form id="scanForm">
-            <div class="form-group">
-                <label>คู่แข่งขัน / รายการลีก:</label>
-                <input type="text" id="league_name" name="league_name" value="Premier League (Arsenal vs Chelsea)">
-            </div>
-            <div class="form-group">
-                <label>ยิงเฉลี่ย (เจ้าบ้านในบ้าน / ทีมเยือนนอกบ้าน):</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" step="0.1" id="home_scored_home" name="home_scored_home" value="1.8">
-                    <input type="number" step="0.1" id="away_scored_away" name="away_scored_away" value="1.4">
+            <div class="match-card">
+                <div class="match-info">
+                    <h3>Real Madrid vs Barcelona</h3>
+                    <p>La Liga • วิเคราะห์อัพเดทเรียลไทม์</p>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>ราคาเป้าหมายสูง (Target Odds):</label>
-                <input type="number" step="0.25" id="target_odds" name="target_odds" value="2.5">
-            </div>
-            <div class="form-group">
-                <label>ฟอร์มรวมยิง 5 นัด & เสีย 5 นัด:</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" step="0.1" name="form_5_goals_total" value="3.5">
-                    <input type="number" step="0.1" name="form_5_conceded_total" value="2.0">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>ค่า xG รวม:</label>
-                <input type="number" step="0.1" name="xg_total" value="3.1">
+                <button class="btn-scan" onclick="runScan('Real Madrid vs Barcelona')">สแกนคู่นี้</button>
             </div>
             
-            <button type="button" onclick="runScan()">🔍 ประมวลผลสูตร 7 ส่วน (รันเกรด)</button>
-        </form>
+            <div class="match-card">
+                <div class="match-info">
+                    <h3>Manchester United vs Liverpool</h3>
+                    <p>Premier League • วิเคราะห์อัพเดทเรียลไทม์</p>
+                </div>
+                <button class="btn-scan" onclick="runScan('Manchester United vs Liverpool')">สแกนคู่นี้</button>
+            </div>
+        </div>
 
-        <div id="result">
-            <div class="grade-box" id="resGrade"></div>
-            <p><strong>ความมั่นใจ:</strong> <span id="resConf"></span> (ผ่านเกณฑ์: <span id="resCount"></span>)</p>
-            <hr style="border-color: #444;">
-            <p><strong>รายละเอียดการตรวจสอบ:</strong></p>
-            <ul id="resDetails"></ul>
+        <!-- กล่องแสดงผลลัพธ์การวิเคราะห์แบบอัตโนมัติ -->
+        <div id="result-box">
+            <h2 id="res-match">ผลการวิเคราะห์</h2>
+            <div class="detail-item"><b>เกรดความมั่นใจ:</b> <span id="res-grade" style="color: #00e676; font-size: 18px;">-</span></div>
+            <div class="detail-item"><b>เปอร์เซ็นต์ความสำเร็จ:</b> <span id="res-conf">-</span></div>
+            <div class="detail-item"><b>เกณฑ์ที่ผ่าน:</b> <span id="res-count">-</span></div>
+            <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0;">
+            <div id="res-details" style="color: #ccc; font-size: 13px;"></div>
         </div>
     </div>
-</div>
 
-<!-- แถบเมนูด้านล่าง -->
-<div class="nav-bar">
-    <a href="#" class="nav-item active">📊 ทำนายผล</a>
-    <a href="#" class="nav-item">📅 ตารางแข่ง</a>
-    <a href="#" class="nav-item">🔴 ผลบอลสด</a>
-    <a href="#" class="nav-item">🏆 ตารางคะแนน</a>
-</div>
+    <script>
+        function runScan(matchName) {
+            // แสดงสถานะกำลังโหลด
+            const resultBox = document.getElementById('result-box');
+            resultBox.style.display = 'block';
+            document.getElementById('res-match').innerText = "⏳ กำลังดึงข้อมูลและประมวลผล " + matchName + "...";
+            document.getElementById('res-grade').innerText = "กำลังวิเคราะห์...";
+            document.getElementById('res-conf').innerText = "-";
+            document.getElementById('res-count').innerText = "-";
+            document.getElementById('res-details').innerHTML = "";
 
-<script>
-    function selectMatch(matchName, league, odds, homeGoal, awayGoal) {
-        document.getElementById('league_name').value = league + " (" + matchName + ")";
-        document.getElementById('target_odds').value = odds;
-        document.getElementById('home_scored_home').value = homeGoal;
-        document.getElementById('away_scored_away').value = awayGoal;
-        window.scrollTo({top: 400, behavior: 'smooth'});
-    }
+            // ส่งข้อมูลชื่อคู่บอลไปที่หลังบ้าน Flask ผ่านระบบ POST
+            let formData = new FormData();
+            formData.append('match_name', matchName);
 
-    function runScan() {
-        const form = document.getElementById('scanForm');
-        const formData = new FormData(form);
-
-        fetch('/scan', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('resGrade').innerText = "เกรดผลลัพธ์: " + data.grade;
-            document.getElementById('resConf').innerText = data.confidence;
-            document.getElementById('resCount').innerText = data.passed_count;
-
-            const detailsList = document.getElementById('resDetails');
-            detailsList.innerHTML = '';
-            data.details.forEach(item => {
-                let li = document.createElement('li');
-                li.innerText = item;
-                detailsList.appendChild(li);
+            fetch('/scan', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('res-match').innerText = "📊 ผลวิเคราะห์: " + data.match_name;
+                document.getElementById('res-grade').innerText = data.grade;
+                document.getElementById('res-conf').innerText = data.confidence;
+                document.getElementById('res-count').innerText = data.passed_count;
+                
+                let detailsHtml = "<b>รายละเอียดการประเมิน 7 ส่วน:</b><br>";
+                data.details.forEach(item => {
+                    detailsHtml += "• " + item + "<br>";
+                });
+                document.getElementById('res-details').innerHTML = detailsHtml;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('res-match').innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อระบบ";
             });
-        })
-        .catch(error => {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อระบบ');
-            console.error(error);
-        });
-    }
-</script>
-
+        }
+    </script>
 </body>
 </html>
