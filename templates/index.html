@@ -26,35 +26,71 @@
             font-size: 24px;
             margin-bottom: 25px;
         }
+        .search-section {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 2px dashed #00e676;
+        }
+        .search-section label {
+            font-weight: bold;
+            color: #00e676;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .search-box-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+        .search-input {
+            flex: 1;
+            background: #121212;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .search-input:focus {
+            border-color: #00e676;
+            outline: none;
+        }
         .match-card {
             background: #2a2a2a;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-left: 4px solid #00e676;
         }
         .match-info h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
+            margin: 0 0 4px 0;
+            font-size: 15px;
             color: #ffffff;
         }
         .match-info p {
             margin: 0;
-            font-size: 13px;
+            font-size: 12px;
             color: #b0b0b0;
+        }
+        .badge-time {
+            color: #00e676;
+            font-weight: bold;
         }
         .btn-scan {
             background-color: #00e676;
             color: #121212;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 16px;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
+            white-space: nowrap;
         }
         .btn-scan:hover {
             background-color: #00c853;
@@ -69,7 +105,7 @@
         #result-box h2 {
             color: #00e676;
             margin-top: 0;
-            font-size: 20px;
+            font-size: 18px;
         }
         .detail-item {
             margin: 8px 0;
@@ -81,28 +117,42 @@
 
     <div class="container">
         <h1>⚽ TDedAi Pro Scanner</h1>
-        <p style="text-align: center; color: #aaa; font-size: 14px; margin-bottom: 20px;">
+        <p style="text-align: center; color: #aaa; font-size: 13px; margin-bottom: 20px;">
             ระบบสแกนและวิเคราะห์สกอร์สูงอัตโนมัติด้วย AI Core Engine 7 ส่วน
         </p>
 
-        <!-- รายการคู่แข่งขันจริงวันนี้จาก API -->
-        <div style="margin-bottom: 20px;">
-            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">📋 เลือกคู่แข่งขันในโปรแกรมวันนี้ (สดจาก API):</label>
-            
-            {% for match in matches %}
-            <div class="match-card">
-                <div class="match-info">
-                    <h3>{{ match.name }}</h3>
-                    <p>{{ match.league }} • วิเคราะห์อัพเดทเรียลไทม์</p>
-                </div>
-                <button class="btn-scan" onclick="runScan('{{ match.name }}')">สแกนคู่นี้</button>
+        <!-- ช่องพิมพ์ค้นหาชื่อทีมตามใจชอบ -->
+        <div class="search-section">
+            <label>🔍 ค้นหาคู่แข่งขัน / พิมพ์ชื่อทีมที่ต้องการวิเคราะห์:</label>
+            <div class="search-box-wrapper">
+                <input type="text" id="customMatchInput" class="search-input" placeholder="เช่น Arsenal หรือ Real Madrid">
+                <button class="btn-scan" onclick="runCustomScan()">สแกนค้นหา</button>
             </div>
-            {% endfor %}
         </div>
 
-        <!-- กล่องแสดงผลลัพธ์การวิเคราะห์แบบอัตโนมัติ -->
+        <!-- รายการแข่งขันสดจาก API -->
+        <div style="margin-bottom: 20px;">
+            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">📋 หรือเลือกคู่แข่งขันในโปรแกรมวันนี้ (สดจาก API):</label>
+            
+            {% if matches %}
+                {% for match in matches %}
+                <div class="match-card">
+                    <div class="match-info">
+                        <h3>{{ match.name }}</h3>
+                        <p>{{ match.league }} • <span class="badge-time">{{ match.time }}</span></p>
+                    </div>
+                    <button class="btn-scan" onclick="runScan('{{ match.name }}', '{{ match.id }}', '{{ match.league }}', '{{ match.time }}')">สแกนคู่นี้</button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #888; text-size: 13px; text-align: center;">กำลังโหลดข้อมูลโปรแกรมวันนี้ หรือใช้วิธีพิมพ์ค้นหาด้านบนได้เลยครับ</p>
+            {% endif %}
+        </div>
+
+        <!-- กล่องแสดงผลลัพธ์การวิเคราะห์ -->
         <div id="result-box">
             <h2 id="res-match">ผลการวิเคราะห์</h2>
+            <p id="res-subinfo" style="color: #00e676; font-size: 13px; margin: 2px 0 10px 0;"></p>
             <div class="detail-item"><b>เกรดความมั่นใจ:</b> <span id="res-grade" style="color: #00e676; font-size: 18px;">-</span></div>
             <div class="detail-item"><b>เปอร์เซ็นต์ความสำเร็จ:</b> <span id="res-conf">-</span></div>
             <div class="detail-item"><b>เกณฑ์ที่ผ่าน:</b> <span id="res-count">-</span></div>
@@ -112,18 +162,45 @@
     </div>
 
     <script>
-        function runScan(matchName) {
+        function runScan(matchName, fixtureId, league, time) {
+            showLoading(matchName);
+
+            let formData = new FormData();
+            formData.append('match_name', matchName);
+            formData.append('fixture_id', fixtureId);
+            formData.append('league', league);
+            formData.append('time', time);
+
+            sendScanRequest(formData);
+        }
+
+        function runCustomScan() {
+            const inputVal = document.getElementById('customMatchInput').value.trim();
+            if (!inputVal) {
+                alert('กรุณาพิมพ์ชื่อทีมที่ต้องการสแกนก่อนครับ');
+                return;
+            }
+            showLoading(inputVal);
+
+            let formData = new FormData();
+            formData.append('match_name', inputVal);
+            formData.append('fixture_id', 0); // ค้นหาจากชื่อ
+
+            sendScanRequest(formData);
+        }
+
+        function showLoading(matchName) {
             const resultBox = document.getElementById('result-box');
             resultBox.style.display = 'block';
             document.getElementById('res-match').innerText = "⏳ กำลังดึงข้อมูลและประมวลผล " + matchName + "...";
+            document.getElementById('res-subinfo').innerText = "";
             document.getElementById('res-grade').innerText = "กำลังวิเคราะห์...";
             document.getElementById('res-conf').innerText = "-";
             document.getElementById('res-count').innerText = "-";
             document.getElementById('res-details').innerHTML = "";
+        }
 
-            let formData = new FormData();
-            formData.append('match_name', matchName);
-
+        function sendScanRequest(formData) {
             fetch('/scan', {
                 method: 'POST',
                 body: formData
@@ -131,6 +208,7 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById('res-match').innerText = "📊 ผลวิเคราะห์: " + data.match_name;
+                document.getElementById('res-subinfo').innerText = "🏆 ลีก: " + data.league + " | ⏰ เวลา: " + data.time;
                 document.getElementById('res-grade').innerText = data.grade;
                 document.getElementById('res-conf').innerText = data.confidence;
                 document.getElementById('res-count').innerText = data.passed_count;
