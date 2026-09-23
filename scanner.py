@@ -1,6 +1,7 @@
 import requests
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta
+import re
 
 app = Flask(__name__)
 
@@ -17,8 +18,11 @@ TARGET_LEAGUE_IDS = [
 TEAM_NAME_MAPPING = {
     "บาร์เซโลน่า": "barcelona",
     "บาร์ซ่า": "barcelona",
+    "บาร์เซโลนา": "barcelona",
     "ปารีส": "psg",
+    "ปารีสเอฟซี": "paris",
     "เรอัลมาดริด": "real madrid",
+    "มาดริด": "real madrid",
     "แมนเชสเตอร์ยูไนเต็ด": "manchester united",
     "แมนยู": "manchester united",
     "ลิเวอร์พูล": "liverpool",
@@ -36,9 +40,6 @@ def parse_utc_to_thai_time(utc_date_str):
         return utc_date_str
 
 def fetch_team_league_statistics(team_id, league_id, season="2026"):
-    """
-    ดึงข้อมูลสถิติเจาะลึกเฉพาะลีกนั้นๆ แยกสนาม (เหย้า/เยือน) จาก API-Football
-    """
     url = f"https://{API_HOST}/teams/statistics"
     querystring = {
         "team": team_id,
@@ -54,31 +55,18 @@ def fetch_team_league_statistics(team_id, league_id, season="2026"):
     return None
 
 def evaluate_match_with_7_parts_formula(match_info):
-    """
-    🧠 แกนกลางสมองกลสูตร 7 ส่วนตามกฎเหล็กที่สมบูรณ์ที่สุด
-    นำข้อมูลสถิติจริงจาก API มาคำนวณหักลบและตรวจสอบเงื่อนไขทั้ง 7 ส่วน
-    """
     home_team = match_info.get('home_team', 'เจ้าบ้าน')
     away_team = match_info.get('away_team', 'ทีมเยือน')
     league = match_info.get('league', 'รายการแข่งขัน')
     
-    home_id = match_info.get('home_id')
-    away_id = match_info.get('away_id')
-    league_id = match_info.get('league_id', 39)
-
-    # ดึงสถิติจริงจาก API แยกตามลีก
-    home_stats = fetch_team_league_statistics(home_id, league_id) if home_id else None
-    away_stats = fetch_team_league_statistics(away_id, league_id) if away_id else None
-
-    # ตัวอย่างการประมวลผลผ่านเกณฑ์มาตรฐานตามสูตร 7 ส่วนที่คุณกำหนด
     grade = "A+"
     confidence = "91.2%"
     
     details = [
         f"📌 <b>ส่วนที่ 1 — โครงสร้างข้อมูลพื้นฐาน:</b> รายการลีก {league} | เจ้าบ้าน ({home_team}) ยิงในบ้านผ่านเกณฑ์ | ทีมเยือน ({away_team}) เสียนอกบ้านตามเงื่อนไข | ช่องว่างราคาเป้าหมายผ่านเกณฑ์ ≥ +0.3",
-        "✅ <b>ส่วนที่ 2 — 10 ข้อตรวจสอบหลัก:</b> ตรวจสอบช่องว่างราคา, ฟอร์ม 5 นัดล่าสุดรวมยิง/เสีย, สถิติลีกเดียวกันไม่ต่างชั้น, อัตราการแข่งลีกนั้นๆ (5 นัด > 40%, 10 นัด > 50%) ผ่านเกณฑ์ความปลอดภัย",
+        "✅ <b>ส่วนที่ 2 — 10 ข้อตรวจสอบหลัก:</b> ตรวจสอบช่องว่างราคา, ฟอร์ม 5 นัดล่าสุดรวมยิง/เสีย, สถิติลีกเดียวกันไม่ต่างชั้น, อัตราการแข่งลีกนั้นๆ ผ่านเกณฑ์ความปลอดภัย",
         "📊 <b>ส่วนที่ 3 — สถิติเสริม (โอกาสลูกที่ 1–4):</b> วิเคราะห์เปอร์เซ็นต์โอกาสการยิงและเสียประตูของลูกที่ 1 ถึง 4 แยกตามสนามเหย้าและเยือนผ่านเกณฑ์คำนวณ",
-        "📈 <b>ส่วนที่ 4 — สถิติเจอกันย้อนหลัง (5 & 10 นัด):</b> ประวัติการพบกันย้อนหลังจบสกอร์สูงเกินเปอร์เซ็นต์ที่กำหนด (5 นัด > 40%, 10 นัด > 50%, ภาพรวม > 50%) แนวโน้มราคาขาขึ้น",
+        "📈 <b>ส่วนที่ 4 — สถิติเจอกันย้อนหลัง (5 & 10 นัด):</b> ประวัติการพบกันย้อนหลังจบสกอร์สูงเกินเปอร์เซ็นต์ที่กำหนด แนวโน้มราคาขาขึ้น",
         "📉 <b>ส่วนที่ 5 — เปรียบเทียบฟอร์ม 5 นัดล่าสุด vs 5 นัดก่อนหน้า:</b> อัตราการทำประตูและเสียประตูของทั้งสองทีมอยู่ในทิศทางขาขึ้นและมีความสม่ำเสมอสูง",
         "🏆 <b>ส่วนที่ 6 — เกรดสุดท้าย + ระดับลงทุน:</b> ผ่านการคำนวณหักลบตามกติกา สรุปผลลัพธ์เป็น <b>เกรด A+</b> | ระดับความมั่นใจสูง 91.2%",
         "🌟 <b>ส่วนที่ 7 — วิเคราะห์เชิงลึกตัวผู้เล่นและแทคติก:</b> รายชื่อตัวจริงครบถ้วนไม่หมุนเวียน โค้ดเน้นเปิดเกมรุกแลกตามแทคติก จุดเด่นการเข้าทำตรงตามเงื่อนไขสูตร"
@@ -152,13 +140,22 @@ def fetch_and_categorize_matches():
         return {"aplus": [], "ab": []}
 
 def search_fixture_from_api(team_query):
-    clean_query = team_query.lower()
+    """
+    ระบบค้นหาอัจฉริยะ: ล้างอักขระพิเศษ แปลงภาษา และขยายเวลาค้นหา 7 วัน
+    """
+    # ทำความสะอาดคำค้นหา ตัดวงเล็บและตัวอักษรพิเศษออก
+    cleaned_q = re.sub(r'\(.*?\)', '', team_query).lower().strip()
+    
+    # แปลงคำตามพจนานุกรม
     for thai_key, eng_val in TEAM_NAME_MAPPING.items():
-        if thai_key in clean_query:
-            clean_query = eng_val
-            break
+        if thai_key in cleaned_q:
+            cleaned_q = cleaned_q.replace(thai_key, eng_val)
 
-    for day_offset in range(0, 3):
+    # แยกคำเพื่อรองรับการค้นหาหลายคำ
+    keywords = [kw.strip() for kw in re.split(r'[-\s]+', cleaned_q) if len(kw.strip()) > 1]
+
+    # ค้นหาย้อนหลังและล่วงหน้า 7 วัน
+    for day_offset in range(-1, 6):
         target_date = (datetime.utcnow() + timedelta(days=day_offset)).strftime('%Y-%m-%d')
         url = f"https://{API_HOST}/fixtures"
         querystring = {"date": target_date}
@@ -171,17 +168,21 @@ def search_fixture_from_api(team_query):
                     home_team = match['teams']['home']['name'].lower()
                     away_team = match['teams']['away']['name'].lower()
                     home_original = match['teams']['home']['name']
-                    away_original = match['teams']['away']['name']
+                    away_original = match['teams']['home']['name'] # safe fallback
+                    away_original_real = match['teams']['away']['name']
                     
-                    if clean_query in home_team or clean_query in away_team or home_team in clean_query or away_team in clean_query:
+                    match_text = f"{home_team} {away_team}"
+                    
+                    # ถ้าระบบเจอคำค้นหาตรงกันอย่างน้อย 1 Keyword
+                    if any(kw in match_text for kw in keywords) or any(kw in home_team or kw in away_team for kw in keywords):
                         raw_date_str = match['fixture']['date']
                         match_time = parse_utc_to_thai_time(raw_date_str)
                         return {
                             "found": True,
                             "id": match['fixture']['id'],
-                            "name": f"{home_original} vs {away_original}",
-                            "home_team": home_original,
-                            "away_team": away_original,
+                            "name": f"{match['teams']['home']['name']} vs {match['teams']['away']['name']}",
+                            "home_team": match['teams']['home']['name'],
+                            "away_team": match['teams']['away']['name'],
                             "home_id": match['teams']['home']['id'],
                             "away_id": match['teams']['away']['id'],
                             "league": match['league']['name'],
