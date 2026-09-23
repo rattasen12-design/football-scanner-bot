@@ -15,21 +15,6 @@ TARGET_LEAGUE_IDS = [
     39, 140, 135, 78, 61, 94, 88, 98, 179, 103, 113, 2, 3
 ]
 
-TEAM_NAME_MAPPING = {
-    "บาร์เซโลน่า": "barcelona",
-    "บาร์ซ่า": "barcelona",
-    "บาร์เซโลนา": "barcelona",
-    "ปารีส": "psg",
-    "ปารีสเอฟซี": "paris",
-    "เรอัลมาดริด": "real madrid",
-    "มาดริด": "real madrid",
-    "แมนเชสเตอร์ยูไนเต็ด": "manchester united",
-    "แมนยู": "manchester united",
-    "ลิเวอร์พูล": "liverpool",
-    "อาร์เซนอล": "arsenal",
-    "เชลซี": "chelsea"
-}
-
 def parse_utc_to_thai_time(utc_date_str):
     try:
         clean_str = utc_date_str.replace('Z', '+00:00')
@@ -141,20 +126,14 @@ def fetch_and_categorize_matches():
 
 def search_fixture_from_api(team_query):
     """
-    ระบบค้นหาอัจฉริยะ: ล้างอักขระพิเศษ แปลงภาษา และขยายเวลาค้นหา 7 วัน
+    ระบบค้นหาภาษาอังกฤษอัจฉริยะ: รองรับคำค้นหาสั้นๆ ค้นหาย้อนหลังและล่วงหน้า 7 วัน
     """
-    # ทำความสะอาดคำค้นหา ตัดวงเล็บและตัวอักษรพิเศษออก
-    cleaned_q = re.sub(r'\(.*?\)', '', team_query).lower().strip()
-    
-    # แปลงคำตามพจนานุกรม
-    for thai_key, eng_val in TEAM_NAME_MAPPING.items():
-        if thai_key in cleaned_q:
-            cleaned_q = cleaned_q.replace(thai_key, eng_val)
+    cleaned_q = team_query.lower().strip()
+    keywords = [kw for kw in re.split(r'[-\s]+', cleaned_q) if len(kw) > 1]
 
-    # แยกคำเพื่อรองรับการค้นหาหลายคำ
-    keywords = [kw.strip() for kw in re.split(r'[-\s]+', cleaned_q) if len(kw.strip()) > 1]
+    if not keywords:
+        keywords = [cleaned_q]
 
-    # ค้นหาย้อนหลังและล่วงหน้า 7 วัน
     for day_offset in range(-1, 6):
         target_date = (datetime.utcnow() + timedelta(days=day_offset)).strftime('%Y-%m-%d')
         url = f"https://{API_HOST}/fixtures"
@@ -167,14 +146,10 @@ def search_fixture_from_api(team_query):
                 for match in matches:
                     home_team = match['teams']['home']['name'].lower()
                     away_team = match['teams']['away']['name'].lower()
-                    home_original = match['teams']['home']['name']
-                    away_original = match['teams']['home']['name'] # safe fallback
-                    away_original_real = match['teams']['away']['name']
-                    
                     match_text = f"{home_team} {away_team}"
                     
-                    # ถ้าระบบเจอคำค้นหาตรงกันอย่างน้อย 1 Keyword
-                    if any(kw in match_text for kw in keywords) or any(kw in home_team or kw in away_team for kw in keywords):
+                    # ตรวจสอบว่าคีย์เวิร์ดภาษาอังกฤษตรงกับชื่อทีมเหย้าหรือทีมเยือนหรือไม่
+                    if all(kw in match_text for kw in keywords) or any(kw in home_team or kw in away_team for kw in keywords):
                         raw_date_str = match['fixture']['date']
                         match_time = parse_utc_to_thai_time(raw_date_str)
                         return {
@@ -219,15 +194,15 @@ def scan_match():
         search_result = search_fixture_from_api(match_name)
         if not search_result["found"]:
             return jsonify({
-                "match_name": f"ไม่พบข้อมูล: {match_name}",
-                "league": "ระบบค้นหา API เรียลไทม์",
+                "match_name": f"Not found: {match_name}",
+                "league": "API Realtime Search",
                 "time": "-",
                 "grade": "N/A",
                 "confidence": "0%",
-                "passed_count": "ไม่พบการแข่งขัน",
+                "passed_count": "No match found",
                 "details": [
-                    "❌ <b>ไม่พบข้อมูลการแข่งขันดังกล่าวในระบบ API สำหรับช่วงเวลานี้</b>",
-                    "🔍 คำแนะนำ: ลองพิมพ์ชื่อทีมภาษาอังกฤษ หรือเลือกแมตช์จากรายการแนะนำด้านบน"
+                    "❌ <b>Match not found in API database for this period.</b>",
+                    "🔍 Tip: Try entering a short English team name (e.g., 'Cali', 'America', 'Barcelona')."
                 ]
             })
         match_info = search_result
