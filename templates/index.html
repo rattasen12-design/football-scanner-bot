@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TDedAi Pro: Image Scanner Calculator</title>
+    <title>TDedAi Pro: Formula 7 Parts Scanner</title>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 550px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,255,136,0.15); border: 1px solid #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,255,136,0.15); border: 1px solid #333; }
         .header { text-align: center; margin-bottom: 20px; }
         .header h2 { color: #00ff88; margin: 5px 0; }
         .stats-box { background: #113322; border: 1px solid #00ff88; border-radius: 8px; padding: 10px; display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px; font-size: 13px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 5px; }
-        .form-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff; box-sizing: border-box; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff; box-sizing: border-box; }
+        .row-group { display: flex; gap: 10px; }
+        .row-group .form-group { flex: 1; }
         .upload-section { border: 2px dashed #00ff88; padding: 20px; border-radius: 8px; text-align: center; background: #182820; margin-bottom: 20px; }
         .btn-submit { background: #00ff88; color: #000; border: none; width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; }
         .btn-submit:hover { background: #00cc6a; }
         .result-panel { background: #222; border: 1px solid #00ff88; border-radius: 8px; padding: 15px; margin-top: 20px; display: none; }
         .badge { background: #ffaa00; color: #000; padding: 4px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; }
+        .section-box { background: #181818; border-left: 4px solid #00ff88; padding: 10px 12px; margin: 10px 0; border-radius: 4px; font-size: 13px; line-height: 1.6; }
+        .section-title { color: #00ff88; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h2>⚽ TDedAi Pro Scanner</h2>
-            <p style="font-size: 12px; color: #aaa;">ระบบ AI สแกนวิเคราะห์บอลสูงจากรูปภาพ (ไม่ต้องกรอกมือ)</p>
+            <p style="font-size: 12px; color: #aaa;">ระบบคำนวณสูตร 7 ส่วน พร้อมช่องกรอกราคาต่อรองและสูง-ต่ำ</p>
         </div>
 
         <div class="stats-box">
@@ -35,35 +39,88 @@
         <form id="calcForm" enctype="multipart/form-data">
             
             <div class="upload-section">
-                <label style="color: #00ff88; font-weight: bold; display: block; margin-bottom: 10px;">📸 อัปโหลดรูปภาพสถิติ/ราคา (เลือกได้หลายรูป)</label>
+                <label style="color: #00ff88; font-weight: bold; display: block; margin-bottom: 10px;">📸 อัปโหลดรูปภาพสถิติ (เลือกได้หลายรูป)</label>
                 <input type="file" name="screenshots" accept="image/*" multiple style="color: #ccc;" required>
             </div>
 
             <div class="form-group">
                 <label>ชื่อคู่แข่งขัน (เช่น โกรลุด vs โมสส์)</label>
-                <input type="text" name="match_name" placeholder="พิมพ์ชื่อคู่แข่งขันเพื่ออ้างอิงผลสแกน" required>
+                <input type="text" name="match_name" placeholder="ระบุชื่อคู่แข่งขัน" required>
             </div>
 
             <div class="form-group">
                 <label>รายการลีก / การแข่งขัน</label>
-                <input type="text" name="league" placeholder="เช่น พรีเมียร์ลีกอังกฤษ" required>
+                <input type="text" name="league" placeholder="เช่น ดิวิชัน 1 นอร์เวย์" required>
             </div>
 
-            <button type="submit" class="btn-submit">🔍 สแกนและรันสูตร 7 ส่วนทันที</button>
+            <div class="row-group">
+                <div class="form-group">
+                    <label>ราคาต่อรอง (Handicap)</label>
+                    <input type="text" name="handicap" placeholder="เช่น 0.5 หรือ 0.75" required>
+                </div>
+                <div class="form-group">
+                    <label>ราคาสูง-ต่ำ (Over/Under)</label>
+                    <input type="text" name="over_under" placeholder="เช่น 2.5 หรือ 2.75" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>จัดอยู่ในกลุ่มเป้าหมาย</label>
+                <select name="group_type">
+                    <option value="กลุ่มที่ 1: เกรด A+ (ทีเด็ดคัดเน้นๆ ความเสี่ยงต่ำสุด)">กลุ่มที่ 1: เกรด A+ (ทีเด็ดคัดเน้นๆ ความเสี่ยงต่ำสุด)</option>
+                    <option value="กลุ่มที่ 2: เกรด A / B (คู่รองน่าลุ้นประจำวัน)">กลุ่มที่ 2: เกรด A / B (คู่รองน่าลุ้นประจำวัน)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit">🔍 คำนวณและวิเคราะห์สูตร 7 ส่วน</button>
         </form>
 
-        <!-- แผงแสดงผลลัพธ์ -->
+        <!-- แผงแสดงผลลัพธ์แยกตามหัวข้อและปีกย่อย -->
         <div class="result-panel" id="resultPanel">
             <h3 id="resName" style="margin-top: 0; color: #00ff88;">-</h3>
             <p style="font-size: 13px; margin: 4px 0;">🏆 ลีก: <span id="resLeague">-</span></p>
-            <p style="font-size: 12px; color: #00ff88; margin: 4px 0;" id="resFilesInfo">-</p>
+            <p style="font-size: 12px; color: #ffaa00; margin: 4px 0;">💰 ราคาที่กรอก: ราคาต่อรอง <b id="resHdp">-</b> | ราคาสูง-ต่ำ <span id="resOU">-</span></p>
+            <p style="font-size: 12px; color: #00ff88; margin: 4px 0;" id="resGroup">-</p>
+            <p style="font-size: 12px; color: #aaa; margin: 4px 0;" id="resFilesInfo">-</p>
+            
             <div style="display: flex; gap: 10px; margin: 15px 0;">
                 <div style="flex: 1; background: #1a1a1a; padding: 10px; border-radius: 6px; text-align: center;">เกรดสูตร: <span class="badge" id="resGrade">-</span></div>
                 <div style="flex: 1; background: #1a1a1a; padding: 10px; border-radius: 6px; text-align: center;">ความมั่นใจ: <b id="resConf" style="color:#00ff88;">-</b></div>
             </div>
-            <p style="font-size: 13px; font-weight: bold; color: #ffaa00;" id="resPassed">-</p>
-            <div style="font-size: 12px; background: #181818; padding: 12px; border-radius: 6px; line-height: 1.8;" id="resDetails">
-                -
+
+            <div class="section-box">
+                <div class="section-title">📌 ส่วนที่ 1 — โครงสร้างข้อมูลพื้นฐาน (แยกสถิติเฉพาะลีก)</div>
+                <div id="p1"></div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-title">✅ ส่วนที่ 2 — 10 ข้อตรวจสอบหลัก + ข้อ 11 สถิติเฉพาะลีก</div>
+                <div id="p2"></div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-title">📊 ส่วนที่ 3 — สถิติเสริม: โอกาสลูกที่ 1–4 (เปอร์เซ็นต์)</div>
+                <div id="p3"></div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-title">• 🆕 ส่วนที่ 4 — สถิติเจอกันย้อนหลัง 5 และ 10 นัด</div>
+                <div id="p4"></div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-title">• 📈 ส่วนที่ 5 — ฟอร์มเปรียบเทียบ 5 นัดล่าสุด vs 5 นัดก่อนหน้า</div>
+                <div id="p5"></div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-title">• 🏆 ส่วนที่ 6 — เกรดสุดท้าย + ระดับลงทุน</div>
+                <div id="p6"></div>
+            </div>
+
+            <div class="section-box">
+                <div class="section-title">🌟 ส่วนที่ 7 — วิเคราะห์เชิงลึกตัวผู้เล่นและแทคติก</div>
+                <div id="p7"></div>
             </div>
         </div>
     </div>
@@ -82,16 +139,28 @@
                 document.getElementById('resultPanel').style.display = 'block';
                 document.getElementById('resName').innerText = data.match_name;
                 document.getElementById('resLeague').innerText = data.league;
+                document.getElementById('resHdp').innerText = data.handicap;
+                document.getElementById('resOU').innerText = data.over_under;
+                document.getElementById('resGroup').innerText = `📂 จัดกลุ่ม: ${data.group_type}`;
                 document.getElementById('resGrade').innerText = data.grade;
                 document.getElementById('resConf').innerText = data.confidence;
-                document.getElementById('resPassed').innerText = data.passed_count;
-                document.getElementById('resFilesInfo').innerText = `📎 สแกนรูปภาพเข้าสู่ระบบสำเร็จ: ${data.uploaded_count} รูป`;
+                document.getElementById('resFilesInfo').innerText = `📎 อัปโหลดรูปภาพสำเร็จ: ${data.uploaded_count} รูป`;
 
-                let detailsHtml = "";
-                data.details.forEach(d => {
-                    detailsHtml += `<p style="margin: 8px 0; border-bottom: 1px solid #333; padding-bottom: 8px;">${d}</p>`;
-                });
-                document.getElementById('resDetails').innerHTML = detailsHtml;
+                function renderList(elementId, items) {
+                    let html = "";
+                    items.forEach(item => {
+                        html += `<p style="margin: 4px 0; border-bottom: 1px solid #252525; padding-bottom: 4px;">${item}</p>`;
+                    });
+                    document.getElementById(elementId).innerHTML = html;
+                }
+
+                renderList('p1', data.part_1);
+                renderList('p2', data.part_2);
+                renderList('p3', data.part_3);
+                renderList('p4', data.part_4);
+                renderList('p5', data.part_5);
+                renderList('p6', data.part_6);
+                renderList('p7', data.part_7);
 
                 document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth' });
             });
