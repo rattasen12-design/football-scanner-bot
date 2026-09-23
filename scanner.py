@@ -5,31 +5,34 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    today_str = datetime.datetime.now().strftime("%d/%m/%Y")
+    # ดึงวันที่ปัจจุบันแบบอัตโนมัติ
+    now = datetime.datetime.now()
+    today_str = now.strftime("%d/%m/%Y")
     
+    # จำลองรายการแข่งขันสดประจำวัน (สามารถเปลี่ยนเป็นดึงจาก API หรือระบบสแกนได้ในอนาคต)
     matches = [
         {
-            "match": "อาร์เซนอล vs เชลซี",
-            "league": "Premier League",
-            "gap_score": "+0.75",
-            "h2h_5": "65%",
+            "match": "เรอัล มาดริด vs บาร์เซโลน่า",
+            "league": "La Liga",
+            "gap_score": "+0.85",
+            "h2h_5": "80%",
             "h2h_10": "75%",
             "status": "ผ่านเกณฑ์เข้มงวด 6 ส่วน"
         },
         {
-            "match": "อินเตอร์ มิลาน vs ยูเวนตุส",
-            "league": "Serie A",
-            "gap_score": "+0.50",
-            "h2h_5": "60%",
-            "h2h_10": "70%",
+            "match": "บาเยิร์น มิวนิค vs ดอร์ทมุนด์",
+            "league": "Bundesliga",
+            "gap_score": "+0.65",
+            "h2h_5": "70%",
+            "h2h_10": "80%",
             "status": "ผ่านเกณฑ์เข้มงวด 6 ส่วน"
         },
         {
-            "match": "แอตเลติโก มาดริด vs บียาร์เรอัล",
-            "league": "La Liga",
-            "gap_score": "+0.40",
-            "h2h_5": "55%",
-            "h2h_10": "65%",
+            "match": "ลิเวอร์พูล vs แมนเชสเตอร์ ซิตี้",
+            "league": "Premier League",
+            "gap_score": "+0.55",
+            "h2h_5": "65%",
+            "h2h_10": "70%",
             "status": "ผ่านเกณฑ์เข้มงวด 6 ส่วน"
         }
     ]
