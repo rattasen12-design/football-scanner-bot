@@ -10,7 +10,7 @@ HEADERS = {
     "x-apisports-key": API_KEY
 }
 
-# กำหนดเฉพาะ 10 ลีกหลักสำคัญ เพื่อความแม่นยำและประหยัดโควต้า API
+# รวม 10 ลีกหลักเดิม + 3 ลีกใหม่ที่คุณเลือกเพิ่ม เพื่อให้มีแมตช์อัปเดตต่อเนื่อง
 TARGET_LEAGUES = {
     39: "Premier League (England)",
     140: "La Liga (Spain)",
@@ -21,7 +21,11 @@ TARGET_LEAGUES = {
     88: "Eredivisie (Netherlands)",
     2: "UEFA Champions League",
     3: "UEFA Europa League",
-    848: "UEFA Women's Champions League"
+    848: "UEFA Women's Champions League",
+    # เพิ่ม 3 ลีกใหม่ตามที่คุณระบุ
+    877: "UEFA Women's Champions League (Additional)",
+    239: "Primera A (Colombia - Categoría Primera A)",
+    253: "USL Championship (USA - USL Division 1)"
 }
 
 def parse_utc_to_thai_time(utc_date_str):
@@ -63,62 +67,67 @@ def evaluate_match_with_7_parts_formula(match_info):
 
 def fetch_and_categorize_matches():
     """
-    ดึงตารางการแข่งขันประจำวันเฉพาะ 10 ลีกหลักที่คุณกำหนด
+    ดึงตารางการแข่งขันโดยครอบคลุมช่วงวันปัจจุบันและวันข้างหน้า เพื่อป้องกันรายการว่าง
     """
     url = f"https://{API_HOST}/fixtures"
-    today_date = datetime.utcnow().strftime('%Y-%m-%d')
-    querystring = {"date": today_date}
+    
+    # ดึงข้อมูลของวันนี้ และเผื่อไปอีก 2 วันข้างหน้าเพื่อให้ครอบคลุมแมตช์ที่กำลังจะเตะ
+    group_aplus = []
+    group_ab = []
+    
+    for i in range(3):
+        target_date = (datetime.utcnow() + timedelta(days=i)).strftime('%Y-%m-%d')
+        querystring = {"date": target_date}
 
-    try:
-        response = requests.get(url, headers=HEADERS, params=querystring, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            matches = data.get('response', [])
-            
-            group_aplus = []
-            group_ab = []
-            
-            for match in matches:
-                league_id = match['league']['id']
+        try:
+            response = requests.get(url, headers=HEADERS, params=querystring, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                matches = data.get('response', [])
                 
-                # กรองเฉพาะ 10 ลีกหลักที่อยู่ในเป้าหมายเท่านั้น
-                if league_id in TARGET_LEAGUES:
-                    fixture_id = match['fixture']['id']
-                    home_team = match['teams']['home']['name']
-                    away_team = match['teams']['away']['name']
-                    home_id = match['teams']['home']['id']
-                    away_id = match['teams']['away']['id']
-                    league_name = match['league']['name']
+                for match in matches:
+                    league_id = match['league']['id']
                     
-                    raw_date_str = match['fixture']['date']
-                    match_time = parse_utc_to_thai_time(raw_date_str)
-                    
-                    match_data = {
-                        "id": fixture_id,
-                        "name": f"{home_team} vs {away_team}",
-                        "home_team": home_team,
-                        "away_team": away_team,
-                        "home_id": home_id,
-                        "away_id": away_id,
-                        "league": league_name,
-                        "league_id": league_id,
-                        "time": match_time
-                    }
-                    
-                    evaluated = evaluate_match_with_7_parts_formula(match_data)
-                    match_data["grade"] = evaluated["grade"]
-                    
-                    # จัดกลุ่มแสดงผล
-                    if len(group_aplus) < 3:
-                        group_aplus.append(match_data)
-                    elif len(group_ab) < 4:
-                        group_ab.append(match_data)
+                    if league_id in TARGET_LEAGUES:
+                        fixture_id = match['fixture']['id']
+                        home_team = match['teams']['home']['name']
+                        away_team = match['teams']['away']['name']
+                        home_id = match['teams']['home']['id']
+                        away_id = match['teams']['away']['id']
+                        league_name = match['league']['name']
+                        
+                        raw_date_str = match['fixture']['date']
+                        match_time = parse_utc_to_thai_time(raw_date_str)
+                        
+                        match_data = {
+                            "id": fixture_id,
+                            "name": f"{home_team} vs {away_team}",
+                            "home_team": home_team,
+                            "away_team": away_team,
+                            "home_id": home_id,
+                            "away_id": away_id,
+                            "league": league_name,
+                            "league_id": league_id,
+                            "time": match_time
+                        }
+                        
+                        evaluated = evaluate_match_with_7_parts_formula(match_data)
+                        match_data["grade"] = evaluated["grade"]
+                        
+                        # จัดกลุ่มแสดงผล (จำกัดจำนวนไม่ให้ล้นหน้าจอเกินไป)
+                        if len(group_aplus) < 4:
+                            if match_data not in group_aplus:
+                                group_aplus.append(match_data)
+                        elif len(group_ab) < 4:
+                            if match_data not in group_ab and match_data not in group_aplus:
+                                group_ab.append(match_data)
+                                
+                if len(group_aplus) >= 4 and len(group_ab) >= 4:
+                    break # ได้ข้อมูลเพียงพอแล้วหยุดลูปเพื่อประหยัดโควต้า
+        except Exception as e:
+            print(f"API Error on date {target_date}: {e}")
 
-            return {"aplus": group_aplus, "ab": group_ab}
-        return {"aplus": [], "ab": []}
-    except Exception as e:
-        print(f"API Error: {e}")
-        return {"aplus": [], "ab": []}
+    return {"aplus": group_aplus, "ab": group_ab}
 
 @app.route('/')
 def index():
@@ -146,7 +155,7 @@ def scan_match():
             "name": match_name,
             "home_team": match_name,
             "away_team": "",
-            "league": "10 ลีกหลักมาตรฐาน",
+            "league": "ลีกคัดพิเศษ",
             "time": "-"
         }
 
