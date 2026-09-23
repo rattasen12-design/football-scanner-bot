@@ -46,8 +46,6 @@ def analyze_7_parts_engine(match_info):
     """
     passed_rules = 7
     total_rules = 7
-    
-    # จำลองข้อมูลวิเคราะห์เชิงลึกที่ดึงดูดและเข้าใจง่าย
     match_name = match_info['name']
     
     score_details = [
@@ -69,7 +67,10 @@ def analyze_7_parts_engine(match_info):
     }
 
 def fetch_and_filter_best_matches():
-    """ดึงรายการแข่งขันวันนี้ และคัดกรองเฉพาะกลุ่มลีกเป้าหมาย"""
+    """
+    ดึงรายการแข่งขันวันนี้: ค้นหาจากกลุ่มลีกเป้าหมายก่อน 
+    หากไม่พบ จะดึงคู่แข่งขันทั่วไปสำรองมาแสดงแทนทันที (Fallback System)
+    """
     url = f"https://{API_HOST}/fixtures"
     today_date = datetime.utcnow().strftime('%Y-%m-%d')
     querystring = {"date": today_date}
@@ -80,29 +81,39 @@ def fetch_and_filter_best_matches():
             data = response.json()
             matches = data.get('response', [])
             
-            best_match_list = []
+            target_match_list = []
+            fallback_match_list = []
+            
             for match in matches:
                 league_id = match['league']['id']
+                fixture_id = match['fixture']['id']
+                home_team = match['teams']['home']['name']
+                away_team = match['teams']['away']['name']
+                league_name = match['league']['name']
+                
+                raw_date_str = match['fixture']['date']
+                match_time = parse_utc_to_thai_time(raw_date_str)
+                
+                match_data = {
+                    "id": fixture_id,
+                    "name": f"{home_team} vs {away_team}",
+                    "league": league_name,
+                    "time": f"เวลา {match_time} น."
+                }
+                
+                # แยกเก็บตามกลุ่มเป้าหมายและกลุ่มสำรอง
                 if league_id in TARGET_LEAGUE_IDS:
-                    fixture_id = match['fixture']['id']
-                    home_team = match['teams']['home']['name']
-                    away_team = match['teams']['away']['name']
-                    league_name = match['league']['name']
-                    
-                    raw_date_str = match['fixture']['date']
-                    match_time = parse_utc_to_thai_time(raw_date_str)
-                    
-                    best_match_list.append({
-                        "id": fixture_id,
-                        "name": f"{home_team} vs {away_team}",
-                        "league": league_name,
-                        "time": f"เวลา {match_time} น."
-                    })
-                    
-                    if len(best_match_list) >= 6:
-                        break
+                    target_match_list.append(match_data)
+                else:
+                    fallback_match_list.append(match_data)
             
-            return best_match_list
+            # ถ้ามีลีกเป้าหมาย ให้แสดงลีกเป้าหมายก่อน (สูงสุด 6 คู่)
+            if target_match_list:
+                return target_match_list[:6]
+            
+            # หากไม่มีลีกเป้าหมาย ให้ดึงคู่แข่งขันทั่วไปมาแสดงแทน (สูงสุด 6 คู่) เพื่อไม่ให้หน้าเว็บว่าง
+            return fallback_match_list[:6]
+            
         return []
     except Exception as e:
         print(f"API Error: {e}")
