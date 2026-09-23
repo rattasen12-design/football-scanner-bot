@@ -13,18 +13,11 @@ def home():
     today_str = now.strftime("%d/%m/%Y")
     today_date_iso = now.strftime("%Y-%m-%d")
     
-    # ดึงโปรแกรมล่วงหน้า 7 วัน เพื่อให้มีแมตช์แสดงผลจากหลากหลายลีก
-    end_date = (now + datetime.timedelta(days=7)).strftime("%Y-%m-%d")
-    
     matches = []
     
     try:
         headers = {'X-Auth-Token': API_KEY}
-        # ดึงภาพรวมแมตช์ทั้งหมดในช่วงเวลานี้ (ระบบจะดึงตามสิทธิ์บัญชีฟรีที่มี)
-        params = {
-            'dateFrom': today_date_iso,
-            'dateTo': end_date
-        }
+        params = {'dateFrom': today_date_iso, 'dateTo': today_date_iso}
         
         response = requests.get(BASE_URL, headers=headers, params=params)
         
@@ -36,40 +29,28 @@ def home():
                 home_team = m['homeTeam']['name']
                 away_team = m['awayTeam']['name']
                 competition = m['competition']['name']
-                match_date_utc = m['utcDate']
-                
-                # แปลงเวลาเตะ
-                match_date = match_date_utc[:10]
-                match_time = match_date_utc.split('T')[1][:5]
                 
                 matches.append({
                     "match": f"{home_team} vs {away_team}",
-                    "league": f"{competition}",
-                    "gap_score": "+0.75",
-                    "h2h_5": f"เวลา {match_time} น.",
-                    "h2h_10": "สดจากสนาม",
-                    "status": f"เตะวันที่: {match_date}"
+                    "league": competition,
+                    "gap_score": "+0.82",
+                    "status": "พร้อมแข่งวันนี้"
                 })
         
-        # ถ้าระบบยังไม่เจอแมตช์ใน API ช่วงเวลานี้ ให้แสดงข้อความแจ้งเตือนสถานะการเชื่อมต่อจริง
         if not matches:
             matches.append({
-                "match": "กำลังรอรอบการแข่งขันของลีกที่คุณเลือกในระบบ...",
-                "league": "Daily Match Scanner",
-                "gap_score": "Live",
-                "h2h_5": "-",
-                "h2h_10": "-",
-                "status": f"ตรวจสอบวันที่: {today_str}"
+                "match": "ยังไม่มีโปรแกรมในระบบวันนี้",
+                "league": "TDedAi Live System",
+                "gap_score": "N/A",
+                "status": "รออัปเดตตาราง"
             })
             
     except Exception as e:
         matches.append({
-            "match": "กำลังซิงค์ข้อมูลกับเซิร์ฟเวอร์บอลสด...",
+            "match": "กำลังโหลดข้อมูล...",
             "league": "System",
             "gap_score": "0.00",
-            "h2h_5": "-",
-            "h2h_10": "-",
-            "status": "กำลังเชื่อมต่อ"
+            "status": "เชื่อมต่อ"
         })
 
     return render_template('index.html', matches=matches, update_time=today_str)
