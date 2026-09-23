@@ -24,7 +24,7 @@
     <div class="container">
         <div class="header">
             <h2>⚽ TDedAi Pro Calculator</h2>
-            <p style="font-size: 12px; color: #aaa;">ระบบประมวลผลสูตรบอลสูง 7 ส่วน (รองรับภาพแคปหน้าจอ & คีย์ข้อมูล)</p>
+            <p style="font-size: 12px; color: #aaa;">ระบบประมวลผลสูตรบอลสูง 7 ส่วน (รองรับภาพหลายรูป & ฟอร์มตรวจสอบ)</p>
         </div>
 
         <div class="stats-box">
@@ -32,22 +32,22 @@
             <div>แม่นยำสูง<br><b style="color: #00ff88;">{{ stats.accuracy }}</b></div>
         </div>
 
-        <!-- ฟอร์มรับข้อมูลและภาพ -->
         <form id="calcForm" enctype="multipart/form-data">
             
             <div class="upload-section">
-                <label style="color: #00ff88; font-weight: bold; margin-bottom: 8px;">📸 อัปโหลดรูปภาพแคปหน้าจอ (สถิติ/ราคา)</label>
-                <input type="file" name="screenshot" accept="image/*" style="background: transparent; border: none; color: #ccc;">
+                <label style="color: #00ff88; font-weight: bold; margin-bottom: 8px;">📸 อัปโหลดรูปภาพแคปหน้าจอ (เลือกได้หลายรูปพร้อมกัน)</label>
+                <!-- เพิ่มคำสั่ง multiple ตรงนี้เพื่อให้เลือกไฟล์รูปได้หลายรูป -->
+                <input type="file" name="screenshot" accept="image/*" multiple style="background: transparent; border: none; color: #ccc;">
             </div>
 
             <div style="display: flex; gap: 10px;">
                 <div class="form-group" style="flex: 1;">
                     <label>ทีมเหย้า (Home)</label>
-                    <input type="text" name="home_team" placeholder="เช่น บาร์เซโลน่า" required>
+                    <input type="text" name="home_team" placeholder="เช่น โกรลุด" required>
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label>ทีมเยือน (Away)</label>
-                    <input type="text" name="away_team" placeholder="เช่น เรอัล มาดริด" required>
+                    <input type="text" name="home_team" name="away_team" placeholder="เช่น โมสส์" required>
                 </div>
             </div>
 
@@ -71,19 +71,20 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">🚀 รันสูตรวิเคราะห์ 7 ส่วนทันที</button>
+            <button type="submit" class="btn-submit">🚀 รันสูตรวิเคราะห์ 7 ส่วนเต็มรูปแบบ</button>
         </form>
 
         <!-- แผงแสดงผลลัพธ์ -->
         <div class="result-panel" id="resultPanel">
             <h3 id="resName" style="margin-top: 0; color: #00ff88;">-</h3>
             <p style="font-size: 13px; margin: 4px 0;">🏆 ลีก: <span id="resLeague">-</span></p>
+            <p style="font-size: 12px; color: #00ff88; margin: 4px 0;" id="resFilesInfo">-</p>
             <div style="display: flex; gap: 10px; margin: 15px 0;">
                 <div style="flex: 1; background: #1a1a1a; padding: 10px; border-radius: 6px; text-align: center;">เกรดสูตร: <span class="badge" id="resGrade">-</span></div>
                 <div style="flex: 1; background: #1a1a1a; padding: 10px; border-radius: 6px; text-align: center;">ความมั่นใจ: <b id="resConf" style="color:#00ff88;">-</b></div>
             </div>
-            <p style="font-size: 12px; color: #ffaa00;" id="resPassed">-</p>
-            <div style="font-size: 12px; background: #181818; padding: 12px; border-radius: 6px; line-height: 1.6;" id="resDetails">
+            <p style="font-size: 13px; font-weight: bold; color: #ffaa00;" id="resPassed">-</p>
+            <div style="font-size: 12px; background: #181818; padding: 12px; border-radius: 6px; line-height: 1.8;" id="resDetails">
                 -
             </div>
         </div>
@@ -106,14 +107,14 @@
                 document.getElementById('resGrade').innerText = data.grade;
                 document.getElementById('resConf').innerText = data.confidence;
                 document.getElementById('resPassed').innerText = data.passed_count;
+                document.getElementById('resFilesInfo').innerText = `📎 อัปโหลดรูปภาพเข้าระบบสำเร็จ: ${data.uploaded_count} รูป`;
 
                 let detailsHtml = "";
                 data.details.forEach(d => {
-                    detailsHtml += `<p style="margin: 8px 0; border-bottom: 1px solid #333; padding-bottom: 6px;">${d}</p>`;
+                    detailsHtml += `<p style="margin: 8px 0; border-bottom: 1px solid #333; padding-bottom: 8px;">${d}</p>`;
                 });
                 document.getElementById('resDetails').innerHTML = detailsHtml;
 
-                // เลื่อนหน้าจอลงมาดูผลลัพธ์อัตโนมัติ
                 document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth' });
             });
         });
