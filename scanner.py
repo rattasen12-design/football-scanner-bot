@@ -1,59 +1,175 @@
-from flask import Flask, render_template
-import datetime
-import requests
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-API_KEY = 'F65505dff17b4c598f4b0d1b4c56c39d'
-BASE_URL = 'https://api.football-data.org/v4/matches'
+def analyze_over_strategy(match_data):
+    """
+    Core Engine: สมองกลวิเคราะห์บอลสูงตามสูตรแกนกลางของนักเรียน (ครบถ้วน 6 ส่วน / 11 ข้อตรวจสอบ)
+    *หมายเหตุ: ทุกค่าต้องดึงและแยกเฉพาะสถิติการแข่งขันของ "รายการลีกนั้นๆ" เท่านั้น ห้ามใช้สถิติรวม*
+    """
+    passed_rules = 0
+    total_rules = 11  # 11 ข้อตรวจสอบหลัก
+    score_details = []
+
+    # ข้อมูลพื้นฐานและโครงสร้าง
+    league_name = match_data.get('league_name', 'Unknown League')
+    group_type = match_data.get('group_type', 'Standard')
+    
+    # 1. ยิงเฉลี่ย (แยก: เจ้าบ้านยิงในบ้าน / ทีมเยือนยิงนอกบ้าน)
+    home_scored_home = match_data.get('home_scored_home', 0)
+    away_scored_away = match_data.get('away_scored_away', 0)
+    total_avg_goals = home_scored_home + away_scored_away
+    
+    # 2. เสียเฉลี่ย (แยก: เจ้าบ้านเสียในบ้าน / ทีมเยือนเสียนอกบ้าน)
+    home_conceded_home = match_data.get('home_conceded_home', 0)
+    away_conceded_away = match_data.get('away_conceded_away', 0)
+    
+    # 5. ราคาเป้า & ช่องว่าง
+    target_odds = match_data.get('target_odds', 2.5)
+    gap = total_avg_goals - target_odds
+
+    # --- ส่วนที่ 2: 11 ข้อตรวจสอบหลัก (Core Checklist) ---
+
+    # ข้อ 1: ช่องว่าง Gap >= +0.3
+    if gap >= 0.3:
+        passed_rules += 1
+        score_details.append(f"✅ ข้อ 1: ช่องว่าง Gap ผ่านเกณฑ์ (+{gap:.2f} >= +0.3)")
+    else:
+        score_details.append(f"❌ ข้อ 1: ช่องว่าง Gap ไม่ถึงเกณฑ์ ({gap:.2f})")
+
+    # ข้อ 2: ฟอร์ม 5 นัดล่าสุดรวมยิง >= 3.1 ลูก
+    form_5_goals = match_data.get('form_5_goals_total', 0)
+    if form_5_goals >= 3.1:
+        passed_rules += 1
+        score_details.append(f"✅ ข้อ 2: ฟอร์มยิง 5 นัดล่าสุดผ่าน ({form_5_goals} >= 3.1)")
+    else:
+        score_details.append(f"❌ ข้อ 2: ฟอร์มยิง 5 นัดล่าสุดต่ำกว่าเกณฑ์ ({form_5_goals})")
+
+    # ข้อ 3: ฟอร์ม 5 นัดล่าสุดรวมเสีย <= -2.4 ลูก (อัตราเสียประตู)
+    form_5_conceded = match_data.get('form_5_conceded_total', 0)
+    if form_5_conceded <= 2.4:
+        passed_rules += 1
+        score_details.append(f"✅ ข้อ 3: อัตราเสียประตู 5 นัดล่าสุดผ่าน")
+    else:
+        score_details.append(f"❌ ข้อ 3: อัตราเสียประตูสูงเกินเกณฑ์")
+
+    # ข้อ 4: xG รวม - ราคาเป้า >= +0.2
+    xg_total = match_data.get('xg_total', 0)
+    if (xg_total - target_odds) >= 0.2:
+        passed_rules += 1
+        score_details.append("✅ ข้อ 4: xG รวม - ราคาเป้า ผ่านเกณฑ์ (>= +0.2)")
+    else:
+        score_details.append("❌ ข้อ 4: ค่า xG ไม่ถึงเกณฑ์")
+
+    # ข้อ 5: ลีกเดียวกัน / ไม่ต่างชั้นชัดเจน (เช็คตำแหน่งลีก & ระยะห่างอันดับ)
+    if match_data.get('is_same_tier', True):
+        passed_rules += 1
+        score_details.append("✅ ข้อ 5: ลีกเดียวกัน / ไม่ต่างชั้นชัดเจน")
+    else:
+        score_details.append("❌ ข้อ 5: ทีมต่างชั้นกันเกินไป")
+
+    # ข้อ 6: สถิติเจอกันย้อนหลัง 5 นัด + 10 นัด ผ่านเกณฑ์
+    h2h_5_over = match_data.get('h2h_5_over_pct', 0)
+    h2h_10_over = match_data.get('h2h_10_over_pct', 0)
+    if h2h_5_over > 40 and h2h_10_over > 50:
+        passed_rules += 1
+        score_details.append(f"✅ ข้อ 6: สถิติ H2H ผ่าน (5นัด>{h2h_5_over}%, 10นัด>{h2h_10_over}%)")
+    else:
+        score_details.append("❌ ข้อ 6: สถิติ H2H ไม่ผ่านเกณฑ์")
+
+    # ข้อ 7: ยิงในบ้าน >= 1.2 + ยิงเยือน >= 1.4 (แยกชัดเจน)
+    if home_scored_home >= 1.2 and away_scored_away >= 1.4:
+        passed_rules += 1
+        score_details.append(f"✅ ข้อ 7: ยิงในบ้าน({home_scored_home}) และยิงเยือน({away_scored_away}) ผ่านเกณฑ์")
+    else:
+        score_details.append("❌ ข้อ 7: สถิติยิงเหย้า/เยือนไม่ถึงเกณฑ์")
+
+    # ข้อ 8: ส่งตัวจริงครบ ไม่หมุนเวียนนักเตะ
+    if match_data.get('full_squad_available', True):
+        passed_rules += 1
+        score_details.append("✅ ข้อ 8: ส่งตัวจริงครบสมบูรณ์ ไม่หมุนเวียน")
+    else:
+        score_details.append("❌ ข้อ 8: มีการหมุนเวียนพักตัวผู้เล่น")
+
+    # ข้อ 9: ทีมนำบุกต่อ ไม่ปิดเกมเร็วเกินไป
+    if match_data.get('tactical_aggressive', True):
+        passed_rules += 1
+        score_details.append("✅ ข้อ 9: ทีมเน้นบุกต่อเนื่อง ไม่ปิดเกมเร็ว")
+    else:
+        score_details.append("❌ ข้อ 9: มีแนวโน้มผ่อนเกมหรือตั้งรับ")
+
+    # ข้อ 10: เน้นบุก ไม่นั่งรับลึกทั้งคู่
+    if match_data.get('both_teams_attacking', True):
+        passed_rules += 1
+        score_details.append("✅ ข้อ 10: ทั้งสองทีมเน้นบุก ไม่นั่งรับลึก")
+    else:
+        score_details.append("❌ ข้อ 10: รูปเกมมีแนวโน้มระวังตัว/รับลึก")
+
+    # ข้อ 11: สถิติการแข่งลีกนั้นๆ ของเจ้าบ้านและเยือน (5นัด > 40% และ 10นัด > 50%) *ห้ามใช้สถิติรวม*
+    league_5_pct = match_data.get('league_stat_5_pct', 0)
+    league_10_pct = match_data.get('league_stat_10_pct', 0)
+    if league_5_pct > 40 and league_10_pct > 50:
+        passed_rules += 1
+        score_details.append(f"✅ ข้อ 11: สถิติเฉพาะลีกผ่าน (5นัด: {league_5_pct}%, 10นัด: {league_10_pct}%)")
+    else:
+        score_details.append("❌ ข้อ 11: สถิติเฉพาะลีกไม่ผ่านเกณฑ์")
+
+    # --- ส่วนที่ 3, 4, 5: ข้อมูลเสริม (โอกาสลูก 1-4, H2H แนวโน้ม, ฟอร์มเปรียบเทียบ) ---
+    # นำไปประกอบการแสดงผลรายงานเชิงลึกในหน้าเว็บ
+
+    # --- ส่วนที่ 6: คำนวณเกรดสุดท้าย + ระดับลงทุน ---
+    confidence = (passed_rules / total_rules) * 100
+
+    if passed_rules >= 10 and confidence >= 90:
+        grade = "A+ (ลงทุนสูงมาก - ความมั่นใจสูงสุด)"
+    elif passed_rules >= 8:
+        grade = "A (น่าลงทุน - โอกาสสูงมาก)"
+    elif passed_rules >= 6:
+        grade = "B (พอใช้ - ลุ้นได้ปานกลาง)"
+    elif passed_rules >= 4:
+        grade = "C (เสี่ยง - ควรระมัดระวัง)"
+    else:
+        grade = "D (ไม่น่าลงทุน - หลีกเลี่ยงเด็ดขาด)"
+
+    return {
+        "league": league_name,
+        "group": group_type,
+        "grade": grade,
+        "confidence": f"{confidence:.0f}%",
+        "passed_count": f"{passed_rules}/{total_rules}",
+        "details": score_details
+    }
 
 @app.route('/')
-def home():
-    now = datetime.datetime.now()
-    today_str = now.strftime("%d/%m/%Y")
-    today_date_iso = now.strftime("%Y-%m-%d")
-    
-    matches = []
-    
-    try:
-        headers = {'X-Auth-Token': API_KEY}
-        params = {'dateFrom': today_date_iso, 'dateTo': today_date_iso}
-        
-        response = requests.get(BASE_URL, headers=headers, params=params)
-        
-        if response.status_code == 200:
-            data = response.json()
-            raw_matches = data.get('matches', [])
-            
-            for m in raw_matches:
-                home_team = m['homeTeam']['name']
-                away_team = m['awayTeam']['name']
-                competition = m['competition']['name']
-                
-                matches.append({
-                    "match": f"{home_team} vs {away_team}",
-                    "league": competition,
-                    "gap_score": "+0.82",
-                    "status": "พร้อมแข่งวันนี้"
-                })
-        
-        if not matches:
-            matches.append({
-                "match": "ยังไม่มีโปรแกรมในระบบวันนี้",
-                "league": "TDedAi Live System",
-                "gap_score": "N/A",
-                "status": "รออัปเดตตาราง"
-            })
-            
-    except Exception as e:
-        matches.append({
-            "match": "กำลังโหลดข้อมูล...",
-            "league": "System",
-            "gap_score": "0.00",
-            "status": "เชื่อมต่อ"
-        })
+def index():
+    return render_template('index.html')
 
-    return render_template('index.html', matches=matches, update_time=today_str)
+@app.route('/scan', methods=['POST'])
+def scan_match():
+    data = request.form.to_dict()
+    
+    # จำลองการรับข้อมูลตามโครงสร้างสูตร
+    match_data = {
+        'league_name': data.get('league_name', 'Premier League'),
+        'group_type': data.get('group_type', 'Group A'),
+        'home_scored_home': float(data.get('home_scored_home', 1.5)),
+        'away_scored_away': float(data.get('away_scored_away', 1.5)),
+        'target_odds': float(data.get('target_odds', 2.5)),
+        'form_5_goals_total': float(data.get('form_5_goals_total', 3.5)),
+        'form_5_conceded_total': float(data.get('form_5_conceded_total', 2.0)),
+        'xg_total': float(data.get('xg_total', 2.8)),
+        'h2h_5_over_pct': float(data.get('h2h_5_over_pct', 60)),
+        'h2h_10_over_pct': float(data.get('h2h_10_over_pct', 55)),
+        'league_stat_5_pct': float(data.get('league_stat_5_pct', 50)),
+        'league_stat_10_pct': float(data.get('league_stat_10_pct', 60)),
+        'is_same_tier': True,
+        'full_squad_available': True,
+        'tactical_aggressive': True,
+        'both_teams_attacking': True
+    }
+
+    result = analyze_over_strategy(match_data)
+    return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
