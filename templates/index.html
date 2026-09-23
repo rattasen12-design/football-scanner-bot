@@ -85,33 +85,19 @@
             ระบบสแกนและวิเคราะห์สกอร์สูงอัตโนมัติด้วย AI Core Engine 7 ส่วน
         </p>
 
-        <!-- รายการคู่แข่งขันแนะนำวันนี้ -->
+        <!-- รายการคู่แข่งขันจริงวันนี้จาก API -->
         <div style="margin-bottom: 20px;">
-            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">📋 เลือกคู่แข่งขันในโปรแกรมวันนี้:</label>
+            <label style="font-weight: bold; color: #00e676; display: block; margin-bottom: 10px;">📋 เลือกคู่แข่งขันในโปรแกรมวันนี้ (สดจาก API):</label>
             
+            {% for match in matches %}
             <div class="match-card">
                 <div class="match-info">
-                    <h3>Arsenal vs Chelsea</h3>
-                    <p>Premier League • วิเคราะห์อัพเดทเรียลไทม์</p>
+                    <h3>{{ match.name }}</h3>
+                    <p>{{ match.league }} • วิเคราะห์อัพเดทเรียลไทม์</p>
                 </div>
-                <button class="btn-scan" onclick="runScan('Arsenal vs Chelsea')">สแกนคู่นี้</button>
+                <button class="btn-scan" onclick="runScan('{{ match.name }}')">สแกนคู่นี้</button>
             </div>
-
-            <div class="match-card">
-                <div class="match-info">
-                    <h3>Real Madrid vs Barcelona</h3>
-                    <p>La Liga • วิเคราะห์อัพเดทเรียลไทม์</p>
-                </div>
-                <button class="btn-scan" onclick="runScan('Real Madrid vs Barcelona')">สแกนคู่นี้</button>
-            </div>
-            
-            <div class="match-card">
-                <div class="match-info">
-                    <h3>Manchester United vs Liverpool</h3>
-                    <p>Premier League • วิเคราะห์อัพเดทเรียลไทม์</p>
-                </div>
-                <button class="btn-scan" onclick="runScan('Manchester United vs Liverpool')">สแกนคู่นี้</button>
-            </div>
+            {% endfor %}
         </div>
 
         <!-- กล่องแสดงผลลัพธ์การวิเคราะห์แบบอัตโนมัติ -->
@@ -127,7 +113,6 @@
 
     <script>
         function runScan(matchName) {
-            // แสดงสถานะกำลังโหลด
             const resultBox = document.getElementById('result-box');
             resultBox.style.display = 'block';
             document.getElementById('res-match').innerText = "⏳ กำลังดึงข้อมูลและประมวลผล " + matchName + "...";
@@ -136,7 +121,6 @@
             document.getElementById('res-count').innerText = "-";
             document.getElementById('res-details').innerHTML = "";
 
-            // ส่งข้อมูลชื่อคู่บอลไปที่หลังบ้าน Flask ผ่านระบบ POST
             let formData = new FormData();
             formData.append('match_name', matchName);
 
