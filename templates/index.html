@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Scanner Pro</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { text-align: center; color: #1e293b; }
+        .update-time { text-align: center; color: #64748b; margin-bottom: 20px; }
+        .match-card { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .match-title { font-size: 18px; font-weight: bold; color: #0f172a; margin-bottom: 8px; }
+        .match-info { font-size: 14px; color: #475569; margin: 4px 0; }
+        .badge { background: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚽ Football Scanner Pro</h1>
+        <div class="update-time">ข้อมูลประจำวันที่: {{ update_time }}</div>
+        
+        {% for m in matches %}
+        <div class="match-card">
+            <div class="match-title">{{ m.match }} ({{ m.league }})</div>
+            <div class="match-info">Gap Score: <b>{{ m.gap_score }}</b></div>
+            <div class="match-info">H2H (5 นัด): {{ m.h2h_5 }} | H2H (10 นัด): {{ m.h2h_10 }}</div>
+            <div class="badge">{{ m.status }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
