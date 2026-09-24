@@ -44,6 +44,17 @@
             </div>
 
             <div class="form-group">
+                <!-- เพิ่มส่วนช่องค้นหาและดึงข้อมูลอัตโนมัติจาก API -->
+<div style="background: rgba(0, 255, 128, 0.05); border: 1px dashed #00ff80; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+    <label style="color: #00ff80; font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px;">
+        🔍 ค้นหาคู่แข่งขันอัตโนมัติ (ดึงข้อมูลจาก API-Football)
+    </label>
+    <div style="display: flex; gap: 8px;">
+        <input type="text" id="searchTeamInput" placeholder="พิมพ์ชื่อทีม (เช่น Arsenal หรือ Colombia)" style="flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 6px;">
+        <button type="button" onclick="fetchLiveMatchData()" style="background: #00ff80; color: #000; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">ดึงข้อมูล</button>
+    </div>
+</div>
+
                 <label>ชื่อคู่แข่งขัน (เช่น โกรลุด vs โมสส์)</label>
                 <input type="text" name="match_name" placeholder="ระบุชื่อคู่แข่งขัน" required>
             </div>
