@@ -2,37 +2,112 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TDedAi API Inspector</title>
     <style>
-        body { background: #121212; color: #fff; font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-        input, button { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #1e1e1e; color: #fff; margin-bottom: 10px; }
-        button { background: #00ff80; color: #000; font-weight: bold; cursor: pointer; }
-        pre { background: #1a1a1a; padding: 15px; border-radius: 6px; overflow-x: auto; color: #00ff80; border: 1px solid #333; }
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 { color: #00e676; margin-bottom: 10px; }
+        p { margin-bottom: 30px; color: #aaa; text-align: center; }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+        #teamInput {
+            flex-grow: 1;
+            padding: 15px;
+            font-size: 16px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+        }
+        #searchButton {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #00e676;
+            color: #121212;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #searchButton:hover { background-color: #00c853; }
+        #resultArea {
+            width: 100%;
+            max-width: 800px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            white-space: pre-wrap; /* จัดการให้ข้อความขึ้นบรรทัดใหม่ตาม JSON */
+            font-family: Consolas, monaco, monospace;
+            color: #00e676;
+            font-size: 14px;
+            display: none; /* ซ่อนไว้ก่อนจนกว่าจะมีข้อมูล */
+            overflow-x: auto; /* ให้เลื่อนดูแนวนอนได้ถ้าข้อมูลยาว */
+        }
+        .loading {
+            color: #aaa;
+            font-style: italic;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <h2>🔍 ทดสอบดึงข้อมูลดิบจาก API-Football ตามสูตร 7 ส่วน</h2>
-    <p>พิมพ์ชื่อทีมหรือคู่แข่งขัน เพื่อดึงข้อมูลจริงจากระบบ API มาแสดงผลตรวจสอบทีละข้อ</p>
-    
-    <div>
-        <input type="text" id="teamInput" placeholder="พิมพ์ชื่อทีม (เช่น Arsenal)" style="width: 70%;">
-        <button onclick="fetchApiData()">ดึงข้อมูลวิเคราะห์</button>
+    <h1>TDedAi API Inspector</h1>
+    <p>พิมพ์ชื่อทีมหรือคู่แข่งขัน เพื่อดึงข้อมูลดิบจาก API และตรวจสอบความถูกต้องของสูตร 7 ส่วน</p>
+
+    <div class="search-container">
+        <input type="text" id="teamInput" placeholder="🔍 พิมพ์ชื่อทีม (เช่น Manchester United)">
+        <button id="searchButton" onclick="fetchApiData()">ดึงข้อมูลวิเคราะห์</button>
     </div>
 
-    <h3>📋 ผลลัพธ์ข้อมูลดิบจาก API & สูตร 7 ส่วน:</h3>
-    <pre id="resultBox">กำลังรอข้อมูล...</pre>
+    <div id="loadingMessage" class="loading">กำลังวิ่งไปดึงข้อมูลจาก API-Football...</div>
+    <div id="resultArea"></div>
 
     <script>
         async function fetchApiData() {
-            const teamName = document.getElementById('teamInput').value;
-            document.getElementById('resultBox').innerText = "กำลังวิ่งไปดึงข้อมูลจาก API-Football...";
-            
+            const teamName = document.getElementById('teamInput').value.trim();
+            const resultArea = document.getElementById('resultArea');
+            const loadingMessage = document.getElementById('loadingMessage');
+
+            if (!teamName) {
+                alert("กรุณากรุณาพิมพ์ชื่อทีมที่ต้องการค้นหา");
+                return;
+            }
+
+            // รีเซ็ตหน้าจอ
+            resultArea.style.display = 'none';
+            resultArea.textContent = '';
+            loadingMessage.style.display = 'block';
+
             try {
-                const response = await fetch(`/analyze-raw?team=${encodeURIComponent(teamName)}`);
+                // ส่งคำขอไปยัง backend ของเราที่เส้นทาง /analyze-debug
+                const response = await fetch(`/analyze-debug?team=${encodeURIComponent(teamName)}`);
                 const data = await response.json();
-                document.getElementById('resultBox').innerText = JSON.stringify(data, null, 4);
+
+                // ซ่อนข้อความโหลด แสดงผลลัพธ์
+                loadingMessage.style.display = 'none';
+                resultArea.style.display = 'block';
+                resultArea.textContent = JSON.stringify(data, null, 4); // แสดงผลลัพธ์ JSON แบบจัดรูปแบบ
+
             } catch (error) {
-                document.getElementById('resultBox').innerText = "เกิดข้อผิดพลาด: " + error;
+                loadingMessage.style.display = 'none';
+                resultArea.style.display = 'block';
+                resultArea.textContent = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.message;
             }
         }
     </script>
